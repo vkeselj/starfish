@@ -6,7 +6,7 @@
 Including a web site http://web.cs.dal.ca/~vlado or [like
 this](http://dnlp.ca)
 
-##Example
+## Example
 A small example:
 ```example1
 Example-One starfish
