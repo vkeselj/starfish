@@ -18,5 +18,5 @@ A bit longer example
 $a = 1+3;
 
 
-print "and so on'n";
+print "and so on...";
 ```
