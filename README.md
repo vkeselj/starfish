@@ -4,6 +4,8 @@
 The main Starfish web site is
 http://web.cs.dal.ca/~vlado/srcperl/starfish/starfish.html.
 
+## Ignore material below: Just formatting examples in Markdown
+
 > This is a simple formatting test.
 
 Including a web site http://web.cs.dal.ca/~vlado or [like
