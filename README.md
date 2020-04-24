@@ -1,5 +1,5 @@
 # starfish
-## Text-Starfish &endash; A Perl-based System for Text-Embedded Programming and Preprocessing
+## Text-Starfish &mdash; A Perl-based System for Text-Embedded Programming and Preprocessing
 
 The main Starfish web site is
 http://web.cs.dal.ca/~vlado/srcperl/starfish/starfish.html.
