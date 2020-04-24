@@ -2,7 +2,7 @@
 ## Text-Starfish -- A Perl-based System for Text-Embedded Programming and Preprocessing
 
 The main Starfish web site is
-http://web.cs.dal.ca/~vlado/srcperl/starfish/starfish.html .
+http://web.cs.dal.ca/~vlado/srcperl/starfish/starfish.html.
 
 > This is a simple formatting test.
 
