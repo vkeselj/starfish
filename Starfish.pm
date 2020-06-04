@@ -807,9 +807,10 @@ sub setStyle {
 	$self->{CodePreparation} = 's/\\n\\s*#/\\n/g';
     }
     elsif ($s eq 'java') {
-	$self->{LineComment} = '//';
-	$self->{hook} = [{begin => "//+\n", end=>"//-\n", f=>sub{return''}},  # Reserved for output
-		 {begin => '<?', end => '!>', f => \&evaluate }];
+	$self->{LineComment} = '//';               #[0] reserved for output
+	$self->{hook} = [{begin => "//+\n", end=>"//-", f=>sub{return''}},
+          {begin => '//<?', end => '!>', f => \&evaluate },
+          {begin => '<?', end => '!>', f => \&evaluate }];
 	$self->{CodePreparation} = 's/^\s*\/\/+//mg';
     }
     elsif ($s eq 'tex') {                          # TeX and LaTeX hooks
