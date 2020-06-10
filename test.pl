@@ -8,7 +8,11 @@ use Text::Starfish;
 use File::Copy;
 use Carp;
 use Cwd;
-print "use test(1):"; ok(1);
+my $comment_width = 14;
+sub cmt_print { my $c=shift; while (length($c)<$comment_width) {
+  $c.='.'; } print "$c: "; }
+
+&cmt_print("use test(1)"); ok(1);
 
 # Slash hack was added because the Windows terminal evaluates does not
 # evaluate $vars (the use a %varname% form instead) and therefore would
@@ -29,11 +33,7 @@ chdir 'tmp' or die;
 &testcase('03-simple_java'); # a simple Java example, related to previous
 &testcase('04-simple_java', 'replace'); # a simple Java example, replace mode
 &testcase('05-simple_java', 'replace'); # a simple Java example, replace mode
-
-if (&is_module_available('CGI')) {
-  &testcase('01', 'replace'); # "ok 2" requires CGI module
-} else {
-  ok(1); print "\tskipped (ok 2) - CGI module not available\n"; }
+&testcase('06-addHook', 'replace'); # 01->06-addHook
 
 if (&is_module_available('CGI')) {
   &testcase('02', 'replace'); # "ok 3" requires CGI module
@@ -186,13 +186,13 @@ sub okfiles {
 # $procfile - name of the input file when starfish is run on it
 # $outfile  - name of the expected outfile in the testdir
 sub testcase {
-    my $testnum = shift;
-    my ($infile, $procfile, $replace, $out, $outfile);
-    my $testdir = "test-$testnum";
-    if (-d $testdir) { &rm_dir_recursively($testdir) }
-    &my_mkdir($testdir);
-    chdir $testdir or die;
-    my $testfilesdir = '../../testfiles';
+  my $testnum = shift; &cmt_print($testnum);
+  my ($infile, $procfile, $replace, $out, $outfile);
+  my $testdir = "test-$testnum";
+  if (-d $testdir) { &rm_dir_recursively($testdir) }
+  &my_mkdir($testdir);
+  chdir $testdir or die;
+  my $testfilesdir = '../../testfiles';
 
     # example: &testcase(34, 'in:33_tex.in->34.tex -replace -o=34-slides.tex');
     if ($#_==0 && $_[0] =~ /^in:(\S*)->(\S*) -replace -o=(\S*)$/) {
