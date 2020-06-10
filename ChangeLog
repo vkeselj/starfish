@@ -201,3 +201,4 @@ Revision history for Perl extension Text::Starfish.
 	- new simple testcases in Java: 02, 03, 04, 05
 	- change in Java escape suffix to reduce empty line
 	- adding //<? Java prefix hook
+	- test output improvement, moving test case 01->06-addHook
