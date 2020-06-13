@@ -12,7 +12,7 @@ my $comment_width = 14;
 sub cmt_print { my $c=shift; while (length($c)<$comment_width) {
   $c.='.'; } print "$c: "; }
 
-&cmt_print("use test(1)"); ok(1);
+&cmt_print("01-use test"); ok(1);
 
 # Slash hack was added because the Windows terminal evaluates does not
 # evaluate $vars (the use a %varname% form instead) and therefore would

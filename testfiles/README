@@ -1,3 +1,12 @@
+01-use test:    simple test to verify "use Text::Starfish";
+02-simple_java: simple Java example with Test and Release versions
+03-simple_java: simple Java example, similar to 02
+04-simple_java: simple Java with replace
+05-simple_java: simpla Java, 2nd version, with replace
+06-addHook:     adding a hook; Renamed 01 -> 06-addHook
+07-html-cgi:    HTML example with replace, simple use CGI
+
+NEEDS UPDATES:
 2 - simple test, variable testing
 3 - repeated test 2
 
