@@ -202,3 +202,9 @@ Revision history for Perl extension Text::Starfish.
 	- change in Java escape suffix to reduce empty line
 	- adding //<? Java prefix hook
 	- test output improvement, moving test case 01->06-addHook
+
+1.32
+	- documentation improvements
+	- testing improvements: test case renaming:
+	  testfiles/07-html-cgi.html.sfish  was: 02.html.sfish
+	  testfiles/07-html-cgi_html.out    was: 02_html.out

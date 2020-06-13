@@ -36,9 +36,10 @@ chdir 'tmp' or die;
 &testcase('06-addHook', 'replace'); # 01->06-addHook
 
 if (&is_module_available('CGI')) {
-  &testcase('02', 'replace'); # "ok 3" requires CGI module
+  &testcase('07-html-cgi', 'replace'); # requires CGI module
 } else {
-  ok(1); print "\tskipped (ok 3) - CGI module not available\n"; }
+  &cmt_print('07-html-cgi'); ok(1);
+  print "\t07-html-cgi skipped - CGI module not available\n"; }
 
 &testcase('03', 'replace'); # "ok 4"
 &testcase('05', 'replace'); # "ok 5"
