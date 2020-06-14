@@ -28,8 +28,9 @@ To install this module type the following:
 
 If you do not have permissions to install the module in the
 system-wide module repository, you can install it locally; e.g.,
-
+```
  $ perl Makefile.PL PREFIX=/home/mydir
+```
 
 ## DEPENDENCIES
 
@@ -38,7 +39,6 @@ should be a part of Perl core.  Let me know if you find something
 important to add.
 
 ## AUTHORS
-
 
  2001-2020 Vlado Keselj http://web.cs.dal.ca/~vlado
  	   and contributing authors:
