@@ -12,14 +12,21 @@
 09-text:	simple addHook test in default text mode (09-text.in
 		09-text.out)
 		renamed: 05 (05.in 05.out) to 09-text
+10-tex:	       C-preprocessor-like behaviour in (La)TeX (10-tex.in
+	       10-tex.out); using addHook with changing evaluate
+	       function;
+	       renamed: 06 (06.in 06.out) -> 10-tex
+11-make:       test of Makefile mode (11-make_Makefile.in
+	       11-make_Makefile.out);
+	       renamed: 07 (07_Makefile.in 07_Makefile.out) -> 11-make
+12-make:       Makefile mode (12-make_Makefile.in
+	       12-make_Makefile.out);
+	       renamed: 08 (08_Makefile.in 08_Makefile.out) -> 12-make
+13-html:       HTML mode with addHook, with replace, (13-html_html.in
+	       13-html_html.out)
+	       renamed: 09 -> 13-html
 
 NEEDS RENAMING AND DOC UPDATES:
-06 - C-preprocessor-like behaviour in (La)TeX (06.in 06.out)
-     using addHook with changing evaluate function
-07 - test of Makefile mode (07_Makefile.in 07_Makefile.out)
-08 - (08_Makefile.in 08_Makefile.out)
-09 - (09_html.in 09_html.out)
-
 2 - simple test, variable testing (2.in 2.out)
 3 - repeated test 2 (3.in 3.out)
 4 - (4.in 4.out)

@@ -43,11 +43,11 @@ if (&is_module_available('CGI')) {
 
 &testcase('08-tex', 'replace');
 &testcase('09-text', 'replace');
+&testcase('10-tex');
+&testcase('11-make');
+&testcase('12-make');
+&testcase('13-html', 'replace');
 
-&testcase('06'); # was 5 "ok 6"
-&testcase('07'); # was 25, Makefile "ok 7"
-&testcase('08'); # Makefile "ok 8"
-&testcase('09', 'replace'); # old 7, html "ok 9"
 &testcase(2);
 &testcase(3);
 &testcase(4);
