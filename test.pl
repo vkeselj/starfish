@@ -55,18 +55,19 @@ if (&is_module_available('CGI')) {
 &testcase(8);
 &testcase(9, 'out');
 &testcase(30); # html.sfish to html (16 ok)
-# 10 (ok 17)
+
+# ok 21
 copy('../testfiles/9_java.out', '9_java.out');
 starfish_cmd(qw(-o=10_java.out -e=$Starfish::HideMacros=1 9_java.out));
 ok(getfile('10_java.out'),
    getfile("../testfiles/10_java.out"));
-# 11 (ok 18)
+# ok 22
 copy('../testfiles/10_java.out', '10.java');
 starfish_cmd(qw(-o=11_java.out 10.java));
 ok(getfile('11_java.out'),
    getfile("../testfiles/11_java.out"));
 
-# 12 (ok 19)
+# ok 23
 `echo "OSNAME | $OSNAME |"`;
 # Skip if it is windows
 if ($^O =~ m/MSWin/) {

@@ -2,7 +2,7 @@
 02-simple_java: simple Java example with Test and Release versions
 03-simple_java: simple Java example, similar to 02
 04-simple_java: simple Java with replace
-05-simple_java: simpla Java, 2nd version, with replace
+05-simple_java: simple Java, 2nd version, with replace
 06-addHook:     testing hook adding, with replace; Renamed 01 -> 06-addHook
 07-html-cgi:    .html.sfish style with replace, simple use CGI
 		renamed, was 02 (02.html.sfish 02_html.out)
@@ -27,13 +27,18 @@
 	       renamed: 09 -> 13-html
 
 NEEDS RENAMING AND DOC UPDATES:
-2 - simple test, variable testing (2.in 2.out)
-3 - repeated test 2 (3.in 3.out)
-4 - (4.in 4.out)
-6 - (6.in 6.out)
-8 - (8.in 8.out)
-
-9 - (9_java.in 9_java.out)
+2 - simple plain text testing, variables, historical notation form
+    SLePerl time but not active; name 2 (2.in 2.out)
+    to rename to 14-text (14-text.in 14-text.out)
+3 - repeated test 2 (3.in 3.out), after one update
+    to rename to 15-text (15-text.in 15-text.out)
+4 - default mode with hook removal (rmHook) (4.in 4.out)
+    to rename to 16-rmHook (16-rmHook.in 16-rmHook.out)
+6 - using -o option, very similar to 10-tex (6.in 6.out)
+8 - test of some functions getmakefilelist (8.in 8.out)
+9 - working with macros, with -o option (9_java.in 9_java.out)
+30 - testing with Loops, HTML style, collecting ToC (30.html.sfish
+     30_html.out)
 
 13,14,15 - testing some macros //m!newdefe
 
