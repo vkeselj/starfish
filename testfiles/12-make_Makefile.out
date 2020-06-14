@@ -76,6 +76,3 @@ test: ${TMPDIR} $(TEST_LIST); @echo Done
 testr: $(TESTR_LIST); @echo Done
 testv: $(TESTV_LIST); @echo Done
 mktest: $(MKTEST_LIST); @echo Done
-
-tmp/prevedi.c: prevedi.c.sfish
-	starfish -o=$@ -replace $<
