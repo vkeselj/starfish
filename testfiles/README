@@ -10,19 +10,21 @@
 		issue); with replace; renamed 03 (03_tex.in 03_tex.out) to
 		08-tex (08-tex_tex.in 08-tex_tex.out)
 
-NEEDS UPDATES:
-05 -
-06 -
-07 -
-08 -
-09 -
+NEEDS RENAMING AND DOC UPDATES:
+05 - simple addHook test in default text mode (05.in 05.out)
+06 - C-preprocessor-like behaviour in (La)TeX (06.in 06.out)
+     using addHook with changing evaluate function
+07 - test of Makefile mode (07_Makefile.in 07_Makefile.out)
+08 - (08_Makefile.in 08_Makefile.out)
+09 - (09_html.in 09_html.out)
 
-2 - simple test, variable testing
-3 - repeated test 2
-4 -
-6 -
-8 -
-7 - html example
+2 - simple test, variable testing (2.in 2.out)
+3 - repeated test 2 (3.in 3.out)
+4 - (4.in 4.out)
+6 - (6.in 6.out)
+8 - (8.in 8.out)
+
+9 - (9_java.in 9_java.out)
 
 13,14,15 - testing some macros //m!newdefe
 

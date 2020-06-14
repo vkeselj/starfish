@@ -4,6 +4,7 @@ Makefile.PL
 MANIFEST
 META.yml
 README
+README.md
 starfish.conf
 Starfish.pm
 starfish

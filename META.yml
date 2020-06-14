@@ -1,7 +1,7 @@
 --- #YAML:1.0
 name: Text-Starfish
 abstract: Perl-based System for Text-Embedded Programming and Preprocessing
-version: 1.31
+version: 1.32
 authored_by:
   - Vlado Keselj http://web.cs.dal.ca/~vlado
 license: perl
