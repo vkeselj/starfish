@@ -42,8 +42,8 @@ if (&is_module_available('CGI')) {
   print "\t07-html-cgi skipped - CGI module not available\n"; }
 
 &testcase('08-tex', 'replace');
+&testcase('09-text', 'replace');
 
-&testcase('05', 'replace'); # "ok 5"
 &testcase('06'); # was 5 "ok 6"
 &testcase('07'); # was 25, Makefile "ok 7"
 &testcase('08'); # Makefile "ok 8"

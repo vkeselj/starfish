@@ -9,9 +9,11 @@
 08-tex:         .tex style with a lot of patterns (previous memory
 		issue); with replace; renamed 03 (03_tex.in 03_tex.out) to
 		08-tex (08-tex_tex.in 08-tex_tex.out)
+09-text:	simple addHook test in default text mode (09-text.in
+		09-text.out)
+		renamed: 05 (05.in 05.out) to 09-text
 
 NEEDS RENAMING AND DOC UPDATES:
-05 - simple addHook test in default text mode (05.in 05.out)
 06 - C-preprocessor-like behaviour in (La)TeX (06.in 06.out)
      using addHook with changing evaluate function
 07 - test of Makefile mode (07_Makefile.in 07_Makefile.out)

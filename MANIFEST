@@ -24,8 +24,8 @@ testfiles/07-html-cgi.html.sfish
 testfiles/07-html-cgi_html.out
 testfiles/08-tex_tex.in
 testfiles/08-tex_tex.out
-testfiles/05.in
-testfiles/05.out
+testfiles/09-text.in
+testfiles/09-text.out
 testfiles/06.in
 testfiles/06.out
 testfiles/07_Makefile.in
