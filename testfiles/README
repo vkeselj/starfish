@@ -39,6 +39,9 @@ NEEDS RENAMING AND DOC UPDATES:
 9 - working with macros, with -o option (9_java.in 9_java.out)
 30 - testing with Loops, HTML style, collecting ToC (30.html.sfish
      30_html.out)
+ok 21 - testing HideMacros with 9_java.out to 10_java.out
+ok 22 - testing 10_java.out(10.java) to 11_java.out
+ok 23 - (Skip under Windows) testing -mode= option
 
 13,14,15 - testing some macros //m!newdefe
 

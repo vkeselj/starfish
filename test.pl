@@ -85,16 +85,15 @@ else {
   ok($tmp, "444");
 }
 
-# (ok 20)
-&testcase(13, 'out');
+&testcase(13, 'out'); # ok 24
 
-# 14 (ok 21)
+# 14 (ok 25)
 copy('../testfiles/13_java.in','14.java');
 #`perl -I. -- starfish -o=14.out -e="$slash_hack\$Star::HideMacros=1" 14.java`;
 starfish_cmd(qw(-o=14.out -e=$Star::HideMacros=1 14.java));
 comparefiles('../testfiles/14.out', '14.out');
 
-    # 15,16
+    # 15,16 ok 26, 26
     copy('../testfiles/15.java','tmp.java');
     `$^X -I. -- starfish -o=tmp.ERR -e="$slash_hack\$Star::HideMacros=1" tmp.java>tmp1 2>&1`;
     ok($? != 0);
