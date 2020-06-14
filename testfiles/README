@@ -5,6 +5,7 @@
 05-simple_java: simpla Java, 2nd version, with replace
 06-addHook:     testing hook adding, with replace; Renamed 01 -> 06-addHook
 07-html-cgi:    .html.sfish style with replace, simple use CGI
+		renamed, was 02 (02.html.sfish 02_html.out)
 08-tex:         .tex style with a lot of patterns (previous memory
 		issue); with replace; renamed 03 (03_tex.in 03_tex.out) to
 		08-tex (08-tex_tex.in 08-tex_tex.out)

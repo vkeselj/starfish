@@ -19,10 +19,10 @@ testfiles/05-simple_java.in
 testfiles/05-simple_java.out
 testfiles/06-addHook.in
 testfiles/06-addHook.out
-testfiles/07-html-cgi.html.sfish  #was: 02.html.sfish
-testfiles/07-html-cgi_html.out    #was: 02_html.out
-testfiles/03_tex.in
-testfiles/03_tex.out
+testfiles/07-html-cgi.html.sfish
+testfiles/07-html-cgi_html.out
+testfiles/08-tex_tex.in
+testfiles/08-tex_tex.out
 testfiles/05.in
 testfiles/05.out
 testfiles/06.in
