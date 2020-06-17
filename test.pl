@@ -47,27 +47,27 @@ if (&is_module_available('CGI')) {
 &testcase('11-make');
 &testcase('12-make');
 &testcase('13-html', 'replace');
+&testcase('14-text');
+&testcase('15-text');
 
-&testcase(2);
-&testcase(3);
 &testcase(4);
 &testcase(6, 'out');
 &testcase(8);
 &testcase(9, 'out');
 &testcase(30); # html.sfish to html (16 ok)
 
-# ok 21
+&cmt_print('(ok 21)');
 copy('../testfiles/9_java.out', '9_java.out');
 starfish_cmd(qw(-o=10_java.out -e=$Starfish::HideMacros=1 9_java.out));
 ok(getfile('10_java.out'),
    getfile("../testfiles/10_java.out"));
-# ok 22
+&cmt_print('(ok 22)');
 copy('../testfiles/10_java.out', '10.java');
 starfish_cmd(qw(-o=11_java.out 10.java));
 ok(getfile('11_java.out'),
    getfile("../testfiles/11_java.out"));
 
-# ok 23
+&cmt_print('(ok 23)');
 `echo "OSNAME | $OSNAME |"`;
 # Skip if it is windows
 if ($^O =~ m/MSWin/) {
@@ -88,40 +88,47 @@ else {
 &testcase(13, 'out'); # ok 24
 
 # 14 (ok 25)
+&cmt_print('(ok 25)');
 copy('../testfiles/13_java.in','14.java');
 #`perl -I. -- starfish -o=14.out -e="$slash_hack\$Star::HideMacros=1" 14.java`;
 starfish_cmd(qw(-o=14.out -e=$Star::HideMacros=1 14.java));
 comparefiles('../testfiles/14.out', '14.out');
 
-    # 15,16 ok 26, 26
-    copy('../testfiles/15.java','tmp.java');
-    `$^X -I. -- starfish -o=tmp.ERR -e="$slash_hack\$Star::HideMacros=1" tmp.java>tmp1 2>&1`;
-    ok($? != 0);
-    okfiles('../testfiles/15.out', 'tmp1');
+# 15,16 ok 26, 26
+&cmt_print('(ok 26)');
+copy('../testfiles/15.java','tmp.java');
+`$^X -I. -- starfish -o=tmp.ERR -e="$slash_hack\$Star::HideMacros=1" tmp.java>tmp1 2>&1`;
+ok($? != 0);
+&cmt_print('(ok 27)');
+okfiles('../testfiles/15.out', 'tmp1');
 
-    # 17, old 16
-    copy('../testfiles/16develop.SLeP','tmp.SLeP');
-    copy('../testfiles/16.tex','tmp.tex');
-    `$^X -I. -- starfish tmp.SLeP tmp.tex`;
-	if ($^O =~ m/MSWin/) {
-	    `copy /B /Y tmp.SLeP+tmp.tex tmp1`;
-	}
-	else {
-	    `cat tmp.SLeP tmp.tex>tmp1`;
-	}
-    okfiles('../testfiles/16.out', 'tmp1');
+# 17, old 16
+&cmt_print('(ok 28)');
+copy('../testfiles/16develop.SLeP','tmp.SLeP');
+copy('../testfiles/16.tex','tmp.tex');
+`$^X -I. -- starfish tmp.SLeP tmp.tex`;
+if ($^O =~ m/MSWin/) {
+  `copy /B /Y tmp.SLeP+tmp.tex tmp1`;
+}
+else {
+  `cat tmp.SLeP tmp.tex>tmp1`;
+}
+okfiles('../testfiles/16.out', 'tmp1');
 
-    # 18, old 17
-    copy('../testfiles/p_t.java','tmp.java');
-    `$^X -I. -- starfish -o=tmp1 tmp.java`;
-    okfiles('../testfiles/17.out', 'tmp1');
+# 18, old 17
+&cmt_print('(ok 29)');
+copy('../testfiles/p_t.java','tmp.java');
+`$^X -I. -- starfish -o=tmp1 tmp.java`;
+okfiles('../testfiles/17.out', 'tmp1');
 
-    # 19, old 18
-    copy('../testfiles/p_t.java', 'tmp.java');
-    `$^X -I. -- starfish -e="$slash_hack\$Release=1" -o=tmp1 tmp.java`;
-    okfiles('../testfiles/18.out', 'tmp1');
+# 19, old 18
+&cmt_print('(ok 30)');
+copy('../testfiles/p_t.java', 'tmp.java');
+`$^X -I. -- starfish -e="$slash_hack\$Release=1" -o=tmp1 tmp.java`;
+okfiles('../testfiles/18.out', 'tmp1');
 
-# 20, old 19 (ok 27)
+# 20, old 19
+&cmt_print('(ok 31)');
 if ($^O =~ m/MSWin/) {
   skip('Skipped under windows...');
 } else {
@@ -134,7 +141,8 @@ if ($^O =~ m/MSWin/) {
   ok($tmp, "644");
 }
 
-# 21, old 20 has to be done after previous (ok 28)
+# 21, old 20 has to be done after previous
+&cmt_print('(ok 32)');
 if ($^O =~ m/MSWin/) {
   skip('Skipped under windows...');
 } else {
@@ -146,21 +154,21 @@ if ($^O =~ m/MSWin/) {
   ok($tmp, "644");
 }
 
-    # 22, old 21
-    copy('../testfiles/21.html','tmp2.html');
-    `$^X -I. -- starfish -replace -o=tmp1 tmp2.html`;
-    okfiles('../testfiles/21.out', 'tmp1');
+# 22, old 21
+&cmt_print('(ok 33)');
+copy('../testfiles/21.html','tmp2.html');
+`$^X -I. -- starfish -replace -o=tmp1 tmp2.html`;
+okfiles('../testfiles/21.out', 'tmp1');
 
-    # 23
-    &testcase(22);    
+&testcase(22);    
+&testcase(24);
 
-    # 24
-    &testcase(24);
-    #copy('../testfiles/24.py','24.py');
-    #`$^X -I. -- starfish 24.py`;
-    #okfiles('../testfiles/24.py.out', '24.py');
+#copy('../testfiles/24.py','24.py');
+#`$^X -I. -- starfish 24.py`;
+#okfiles('../testfiles/24.py.out', '24.py');
 
 # 26
+&cmt_print('(ok 36)');
 copy('../testfiles/26_include_example.html','26_include_example.html');
 copy('../testfiles/26_include_example1.html','26_include_example1.html');
 starfish_cmd(qw(-replace -o=26-out.html 26_include_example.html));

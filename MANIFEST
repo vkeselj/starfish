@@ -39,6 +39,10 @@ testfiles/11_java.out
 testfiles/12.out
 testfiles/13_java.in
 testfiles/13_java.out
+testfiles/14-text.in
+testfiles/14-text.out
+testfiles/15-text.in
+testfiles/15-text.out
 testfiles/14.out
 testfiles/15.java
 testfiles/15.out
@@ -49,8 +53,6 @@ testfiles/17.out
 testfiles/18.out
 testfiles/19.html
 testfiles/19.out
-testfiles/2.in
-testfiles/2.out
 testfiles/20.out
 testfiles/21.html
 testfiles/21.out
@@ -65,8 +67,6 @@ testfiles/26_include_example.html
 testfiles/26_include_example1.html
 testfiles/30.html.sfish
 testfiles/30_html.out
-testfiles/3.in
-testfiles/3.out
 testfiles/4.in
 testfiles/4.out
 testfiles/6.in

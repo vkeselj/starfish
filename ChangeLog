@@ -206,11 +206,12 @@ Revision history for Perl extension Text::Starfish.
 1.32
 	- documentation improvements
 	- testing improvements: test case renaming:
-	  testfiles/07-html-cgi.html.sfish  was: 02.html.sfish
-	  testfiles/07-html-cgi_html.out    was: 02_html.out
-	  testfiles/08-tex		    was: 03
-	  testfiles/09-text		    was: 05
-	  testfiles/10-tex		    was: 06
-	  testfiles/11-make		    was: 07
-	  testfiles/12-make		    was: 08
-	  testfiles/13-html		    was: 09
+	testfiles/07-html-cgi.html.sfish  was: 02.html.sfish
+	testfiles/07-html-cgi_html.out    was: 02_html.out
+	testfiles/08-tex		    was: 03
+	testfiles/09-text		    was: 05
+	testfiles/10-tex		    was: 06
+	testfiles/11-make		    was: 07
+	testfiles/12-make		    was: 08
+	testfiles/13-html		    was: 09
+	testfiles/14-text	  	    was: 02
