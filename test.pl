@@ -18,8 +18,8 @@ sub cmt_print { my $c=shift; while (length($c)<$comment_width) {
 # evaluate $vars (the use a %varname% form instead) and therefore would
 # not require the extra escape character at the beginning of the variable.
 my $slash_hack;
-if ($^O =~ m/MSWin/) { $slash_hack = ''; }
-else                 {$slash_hack = '\\'; }
+if ($^O =~ m/MSWin/) { $slash_hack = '';   }
+else                 { $slash_hack = '\\'; }
 &my_mkdir('tmp', 'tmp/Text');
 copy('Starfish.pm','tmp/Text/Starfish.pm');
 {
@@ -49,8 +49,8 @@ if (&is_module_available('CGI')) {
 &testcase('13-html', 'replace');
 &testcase('14-text');
 &testcase('15-text');
+&testcase('16-rmHook');
 
-&testcase(4);
 &testcase(6, 'out');
 &testcase(8);
 &testcase(9, 'out');

@@ -29,12 +29,14 @@
 	       notation from SLePerl but not active
 	       files: 14-text.in 14.text.out
 	       renamed 2 (2.in 2.out)
+15-text:       repeated test 14-test with updated input to check that
+	       it stays unchanged; files: 15-text.in 15-text.out
+	       renamed 3 (3.in 3.out)
+16-rmHook:     default mode with hook removal (rmHook)
+               files: 16-rmHook.in 16-rmHook.out
+	       renamed 4 (4.in 4.out)
 
 NEEDS RENAMING AND DOC UPDATES:
-3 - repeated test 2 (3.in 3.out), after one update
-    to rename to 15-text (15-text.in 15-text.out)
-4 - default mode with hook removal (rmHook) (4.in 4.out)
-    to rename to 16-rmHook (16-rmHook.in 16-rmHook.out)
 6 - using -o option, very similar to 10-tex (6.in 6.out)
 8 - test of some functions getmakefilelist (8.in 8.out)
 9 - working with macros, with -o option (9_java.in 9_java.out)
@@ -51,7 +53,7 @@ ok 23 - (Skip under Windows) testing -mode= option
 17,18 - simple example with p_t.java
 
 19,20 - testing html -> html, file permissions: if the output file is
-    specified and mode is not give, it should not be changed.
+    specified and mode is not given, it should not be changed.
 
 21 - HTML example 2
 

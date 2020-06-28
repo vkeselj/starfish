@@ -1267,9 +1267,8 @@ module for embedded Perl C<Text::Oyster>, so it was not used.
 
 The idea with the `C<starfish>' name is: the Perl code is embedded into
 a text, so the text is equivalent to a shellfish containing pearls.
-A starfish comes by and eats the shellfish...  Unlike a natural
-starfish, this C<starfish> is interested in pearls and does not
-normally touch most of the surrounding meat.
+Starfish is chosen as natural starfish feeds on shellfish, with a difference
+that the system C<starfish> feeds on embedded pearls.
 
 =head1 EXAMPLES
 

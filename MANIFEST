@@ -43,6 +43,8 @@ testfiles/14-text.in
 testfiles/14-text.out
 testfiles/15-text.in
 testfiles/15-text.out
+testfiles/16-rmHook.in
+testfiles/16-rmHook.out
 testfiles/14.out
 testfiles/15.java
 testfiles/15.out
@@ -67,8 +69,6 @@ testfiles/26_include_example.html
 testfiles/26_include_example1.html
 testfiles/30.html.sfish
 testfiles/30_html.out
-testfiles/4.in
-testfiles/4.out
 testfiles/6.in
 testfiles/6.out
 testfiles/8.in
