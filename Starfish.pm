@@ -1,5 +1,4 @@
-# Starfish - Perl-based System for Text-Embedded
-#     Programming and Preprocessing
+# Starfish - Perl-based System for Preprocessing and Text-Embedded Programming
 #
 # (c) 2001-2020 Vlado Keselj http://web.cs.dal.ca/~vlado vlado@dnlp.ca
 #               and contributing authors
@@ -31,11 +30,8 @@ use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS); # Exporter vars
 # updated here and in META.yml
 use vars qw($NAME $ABSTRACT $VERSION);
 $NAME     = 'Starfish';
-$ABSTRACT = 'Perl-based System for Text-Embedded Programming and Preprocessing';
+$ABSTRACT = 'Perl-based System for Preprocessing and Text-Embedded Programming';
 $VERSION  = '1.32';
-
-use vars qw($Revision);
-($Revision = substr(q$Revision: $, 10)) =~ s/\s+$//;
 
 use vars qw(@DirGenerateIfNeeded);
 
@@ -70,6 +66,7 @@ sub new($@) {
 	$self->{Style}           = $::Star->{Style};
 	$self->{CodePreparation} = $::Star->{CodePreparation};
 	$self->{LineComment}     = $::Star->{LineComment};
+	$self->{OutDelimiters}   = $::Star->{OutDelimiters};
 	$self->{IgnoreOuter}     = $::Star->{IgnoreOuter};
 	$self->{hook}            = [ @{ $::Star->{hook} } ];
     }
@@ -231,6 +228,7 @@ sub eval_dispatch {
 	my $r = &{$self->{hook}->[$self->{ttype}]->{replace}}( $self, @{ $self->{args} } );
 	return $r if $self->{REPLACE};
 	return $c if $r eq '';
+	#!!! This line needs to be adapted to use OutDelimiters
 	return $c.$self->{hook}->[0]->{'begin'}.$r.$self->{hook}->[0]->{'end'};
     }
     die;
@@ -366,26 +364,34 @@ sub scan {
 	}
 	
 	if ($self->{ttype}==-2) {$self->{currenttoken}=$self->{data}; $self->{data}=''}
-        elsif (@{$self->{args}}) {
-	  #$self->{Out} = $newOut;
-	  $self->_process_outer( substr($self->{data}, 0, $i1) );
-	  #$self->{Out} .= substr($self->{data}, 0, $i1);
-	  ##$self->{data} = $newData;
-	  $self->{prefix} = '';
-	  $self->{currenttoken} = substr($self->{data}, $i1+$pl, $i2-$i1-$pl);
-	  $self->{suffix} = '';
-	  $self->{data} = substr($self->{data}, $i2+$sl);
-	}
-	else {
-	  # just copy type -2
-	  # instead of returning as earlier, to
-	  # support negative look-back for prefix
-	  # $self->{Out} .= substr($self->{data}, 0, $i1);
-	  $self->_process_outer( substr($self->{data}, 0, $i1) );
-	  $self->{prefix} = substr($self->{data}, $i1, $pl);
-	  $self->{currenttoken} = substr($self->{data}, $i1+$pl, $i2-$i1-$pl);
-	  $self->{suffix} = substr($self->{data}, $i2, $sl);
-	  $self->{data} = substr($self->{data}, $i2+$sl);
+	else { # live code
+	  if (@{$self->{args}}) {
+	    #$self->{Out} = $newOut;
+	    $self->_process_outer( substr($self->{data}, 0, $i1) );
+	    #$self->{Out} .= substr($self->{data}, 0, $i1);
+	    ##$self->{data} = $newData;
+	    $self->{prefix} = '';
+	    $self->{currenttoken} = substr($self->{data}, $i1+$pl, $i2-$i1-$pl);
+	    $self->{suffix} = '';
+	    $self->{data} = substr($self->{data}, $i2+$sl);
+	  }
+	  else {
+	    # just copy type -2
+	    # instead of returning as earlier, to
+	    # support negative look-back for prefix
+	    # $self->{Out} .= substr($self->{data}, 0, $i1);
+	    $self->_process_outer( substr($self->{data}, 0, $i1) );
+	    $self->{prefix} = substr($self->{data}, $i1, $pl);
+	    $self->{currenttoken} = substr($self->{data}, $i1+$pl, $i2-$i1-$pl);
+	    $self->{suffix} = substr($self->{data}, $i2, $sl);
+	    $self->{data} = substr($self->{data}, $i2+$sl);
+	  }
+	  # Remove old output if it is there:
+	  if (defined($self->{OutDelimiters})) {
+	    my ($b1,$b2,$e1,$e2) = @{ $self->{OutDelimiters} };
+	    if ($self->{data} =~ /^\Q$b1\E(\d*)\Q$b2\E.*?\Q$e1\E\1\Q$e2\E/s) {
+	      $self->{data} = $'; }
+	  }
 	}
       }
 
@@ -427,9 +433,21 @@ sub evaluate {
     if ($self->{REPLACE}) { return $::O }
     #
     # $self->{hook}->[0] is reserved for output pieces
-    #
-    if ($::O ne '')
-    { $suf.="$self->{hook}->[0]->{'begin'}$::O$self->{hook}->[0]->{'end'}" }
+    # It should be changed to the use of OutDelimiters only
+    if ($::O ne '') {
+      my ($b, $e);
+      if (defined($self->{OutDelimiters})) {
+	my @d = @{ $self->{OutDelimiters} };
+	$b = $d[0].$d[1]; my $i; $e = $d[2].$d[3];
+	if (index($::O, $e) != -1) {
+	  while(1) { $i++; $e=$d[2].$i.$d[3]; last if index($::O, $e)==-1;
+            die "Problem finding ending delimiter!\n(O=$::O)" if $i > 1000000;}
+	  $b = $d[0].$i.$d[1];
+	}
+      } else { $b = $self->{hook}->[0]->{'begin'};
+	       $e = $self->{hook}->[0]->{'end'}; }
+	  $suf.=$b.$::O.$e;
+    }	  
     return "$pref$c$suf";
 }
 
@@ -450,7 +468,8 @@ sub evaluate_py {
     local $::Star = $self;
     local $::O = '';
     $self->eval1($code, 'snippet');
- 
+
+    #!!! to update OutDelimiters
     if ($self->{REPLACE}) { return $::O }
     if ($::O ne '') {
 	my $indent = '';
@@ -483,7 +502,8 @@ sub evaluate_py1 {
     local $::O = '';
     local $::Star = $self;
     $self->eval1($code, 'snippet');
- 
+
+    #!!! to update OutDelimiters
     if ($self->{REPLACE}) { return $indent.$::O }
     elsif ($::O eq '') { return "$indent#$prefix$c!>\n" }
     else {
@@ -500,6 +520,7 @@ sub eval_echo {
     my $suff = shift;
     $::O = $cont;
 
+    # to update OutDelimiters
     return $::O if $self->{REPLACE};
     return $pref.$cont.$suff if $::O eq '';
     $suff.="$self->{hook}->[0]->{'begin'}$::O$self->{hook}->[0]->{'end'}";
@@ -755,6 +776,21 @@ sub setGlobStyle {
     $self->setStyle($s);
 }
 
+sub clearStyle {
+  my $self = shift;
+  foreach my $k (qw(Style CodePreparation LineComment OutDelimiters
+                    IgnoreOuter)) {
+    delete $self->{$k} }
+  $self->{hook} = [];
+}
+
+# List of fields typically set in setStyle:
+# $self->{Style}           = string, style
+# $self->{CodePreparation} = scalar
+# $self->{LineComment}     = string, line comment
+# $self->{OutDelimiters}   = [] eg: "//" "+\n" "//" "-\n"
+# $self->{IgnoreOuter}     = 1 or ''
+# $self->{hook}            = [], list of hooks
 sub setStyle {
     my $self = shift;
     if ($#_ == -1) {
@@ -784,10 +820,13 @@ sub setStyle {
     if (defined $self->{Style} and $s eq $self->{Style}) { return }
     
     # default
+    $self->clearStyle();
     $self->{'LineComment'} = '#';
     $self->{'IgnoreOuter'} = '';
+    #!!should be introduced after all styles are fixed
+    #$self->{OutDelimiters} = [ "\n#", "+\n", "#", "-" ];
     $self->{hook}= [
-      {begin => "\n#+\n", end=>"\n#-\n", f=>sub{return''}}, # Reserved for output
+      #!!!{begin => "\n#+\n", end=>"\n#-\n", f=>sub{return''}}, # Reserved for output
       {begin => '<?', end => '!>', f => \&evaluate },
       {begin => '<?starfish', end => '?>', f => \&evaluate }
     ];
@@ -798,20 +837,26 @@ sub setStyle {
     # extension below was a bug for <?...!>...<?...!>#+...#-
     # ([\ \t]*\#+\n[\000-\377]*?\n[\ \t]*\#-\n)?/x;
 
-    if ($s eq 'perl') { }
+    if ($s eq 'perl') {
+      #!! move later to default
+      $self->{OutDelimiters} = [ "#", "+\n", "#", "-" ];
+    }
     elsif ($s eq 'makefile') {
-	$self->{hook} = [
-	     {begin => qr/^\s*#\+\n/, end=>qr/\n\s*#-\n/, f=>sub{return""}}, # Reserved for output
+      $self->{hook} = [
+             # Reserved for output (!!to change to OutDelimiters)
+	     {begin => qr/^\s*#\+\n/, end=>qr/\n\s*#-\n/, f=>sub{return""}},
 	    ];
 	$self->addHook($re_py1, \&evaluate_py1);
 	$self->{CodePreparation} = 's/\\n\\s*#/\\n/g';
     }
     elsif ($s eq 'java') {
-	$self->{LineComment} = '//';               #[0] reserved for output
-	$self->{hook} = [{begin => "//+\n", end=>"//-", f=>sub{return''}},
-          {begin => '//<?', end => '!>', f => \&evaluate },
-          {begin => '<?', end => '!>', f => \&evaluate }];
-	$self->{CodePreparation} = 's/^\s*\/\/+//mg';
+      $self->{LineComment} = '//';
+      $self->{OutDelimiters} = [ "//", "+\n", "//", "-" ];
+      #[0] reserved for output (!!to change to OutDelimiters)
+      $self->{hook} = [#!!toremove:{begin => "//+\n", end=>"//-", f=>sub{return''}},
+		       {begin => '//<?', end => '!>', f => \&evaluate },
+		       {begin => '<?', end => '!>', f => \&evaluate }];
+      $self->{CodePreparation} = 's/^\s*\/\/+//mg';
     }
     elsif ($s eq 'tex') {                          # TeX and LaTeX hooks
 	$self->{LineComment} = '%';
@@ -1224,8 +1269,8 @@ __END__
 
 =head1 NAME
 
-Text::Starfish.pm and starfish - A Perl-based System for Text-Embedded
-      Programming and Preprocessing
+Text::Starfish.pm and starfish - A Perl-based System for Preprocessing and
+      Text-Embedded Programming
 
 
 =head1 SYNOPSIS
@@ -1775,11 +1820,26 @@ later.  A typical usage could be as follows:
 =head2 $o->setStyle($s)
 
 Sets a particular style of the source file.  Currently implemented
-options are: html, java, latex, makefile, perl, ps, python, TeX, and
-tex.  If the parameter $s is not given, the stile given in
-$o->{STYLE} will be used if defined, otherwise it will be guessed from
-the file name in $o->{INFILE}.  If it cannot be correctly guessed, it
+options are: html, java, makefile, perl, ps, python, and tex (same as latex,
+TeX).  If the parameter $s is not given, the stile given in 
+C<$o->{STYLE}> will be used if defined, otherwise it will be guessed from
+the file name in C<$o->{INFILE}>.  If it cannot be correctly guessed, it
 will be the Perl style.
+
+Setting a style can have various side effects, but it typically
+involves setting the following variables:
+
+ $o->{Style}            # style string id
+ $o->{CodePreparation}  # function to clean the code before running
+ $o->{LineComment}      # string starting a line comment
+ $o->{OutDelimiters}    # array ref with four elements: $b1, $b2 for
+                        # starting output delimiter, and $e1, $e2 for
+                        # the ending output delimiter; $b1 and $e1
+                        # must not end with a digit, and $b2 and $e2
+                        # must not start with a digit
+ $o->{IgnoreOuter}      # boolean variable to ignore outer text, false
+                        # by default
+ $o->{hook}             # array ref, list of hooks
 
 =head1 PREDEFINED FUNCTIONS
 

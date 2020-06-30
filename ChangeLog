@@ -14,10 +14,17 @@ Revision history for Perl extension Text::Starfish.
  - testfiles/14-text		     was: 02
  - testfiles/15-text                 was: 3
  - testfiles/16-rmHook               was: 4
+ - testfiles/17-A_java - a more complex Java test
+ - testfiles/18-p_t_java             was: 17
+ - testing improvements
+ - removing variable $Revision
  - started work on separate treatment of output delimiters:
    * to define as a new style variable OutDelimiters, and
    * to introduce number, e.g., //1+ .. //1- if the output
      contains //+ string, or similarly //2+ etc.
+ - Changing opening output delimiter "\n#+\n" to "#+\n" and similarly to
+   other styles.  This is a significant change that may break some existing
+   programs. It is an ongoing process for the other styles.
 
 1.31 13 Jun 2020
  - documentation improvements

@@ -45,13 +45,16 @@ testfiles/15-text.in
 testfiles/15-text.out
 testfiles/16-rmHook.in
 testfiles/16-rmHook.out
+testfiles/17-A_java.in
+testfiles/17-A_java.out
+testfiles/18-p_t_java.in
+testfiles/18-p_t_java.out
 testfiles/14.out
 testfiles/15.java
 testfiles/15.out
 testfiles/16.out
 testfiles/16.tex
 testfiles/16develop.SLeP
-testfiles/17.out
 testfiles/18.out
 testfiles/19.html
 testfiles/19.out

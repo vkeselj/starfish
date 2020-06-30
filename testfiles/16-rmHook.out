@@ -2,10 +2,7 @@ Testing hook removal:
 
 <? echo 'This will evaluate';
    $Star->rmHook('<?', '!'.'>');
-!>
-#+
-This will evaluate
-#-
-
+!>#+
+This will evaluate#-
 
 <? echo 'But not this'; !>

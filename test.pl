@@ -8,9 +8,19 @@ use Text::Starfish;
 use File::Copy;
 use Carp;
 use Cwd;
+
 my $comment_width = 14;
 sub cmt_print { my $c=shift; while (length($c)<$comment_width) {
   $c.='.'; } print "$c: "; }
+
+&my_mkdir('tmp', 'tmp/Text');
+copy('Starfish.pm','tmp/Text/Starfish.pm');
+{
+    my $f = getfile('starfish');
+    $f =~ s<^#!/usr/bin/perl>{#!/usr/bin/perl -I../blib/lib} or die;
+    putfile('tmp/starfish', $f);
+}
+chdir 'tmp' or die;
 
 &cmt_print("01-use test"); ok(1);
 
@@ -20,14 +30,6 @@ sub cmt_print { my $c=shift; while (length($c)<$comment_width) {
 my $slash_hack;
 if ($^O =~ m/MSWin/) { $slash_hack = '';   }
 else                 { $slash_hack = '\\'; }
-&my_mkdir('tmp', 'tmp/Text');
-copy('Starfish.pm','tmp/Text/Starfish.pm');
-{
-    my $f = getfile('starfish');
-    $f =~ s<^#!/usr/bin/perl>{#!/usr/bin/perl -I../blib/lib} or die;
-    putfile('tmp/starfish', $f);
-}
-chdir 'tmp' or die;
 
 &testcase('02-simple_java'); # a simple Java example
 &testcase('03-simple_java'); # a simple Java example, related to previous
@@ -50,6 +52,14 @@ if (&is_module_available('CGI')) {
 &testcase('14-text');
 &testcase('15-text');
 &testcase('16-rmHook');
+&testcase('17-A_java');
+&testcase('18-p_t_java', 'out');
+
+# 19, old 18
+&cmt_print('(ok 19)');
+copy('../testfiles/p_t.java', 'tmp.java');
+`$^X -I. -- starfish -e="$slash_hack\$Release=1" -o=tmp1 tmp.java`;
+okfiles('../testfiles/18.out', 'tmp1');
 
 &testcase(6, 'out');
 &testcase(8);
@@ -61,13 +71,14 @@ copy('../testfiles/9_java.out', '9_java.out');
 starfish_cmd(qw(-o=10_java.out -e=$Starfish::HideMacros=1 9_java.out));
 ok(getfile('10_java.out'),
    getfile("../testfiles/10_java.out"));
-&cmt_print('(ok 22)');
+
+&cmt_print('(ok 22)'); # Macros testing
 copy('../testfiles/10_java.out', '10.java');
 starfish_cmd(qw(-o=11_java.out 10.java));
 ok(getfile('11_java.out'),
    getfile("../testfiles/11_java.out"));
 
-&cmt_print('(ok 23)');
+&cmt_print('(ok 23)'); # option mode testing
 `echo "OSNAME | $OSNAME |"`;
 # Skip if it is windows
 if ($^O =~ m/MSWin/) {
@@ -85,7 +96,7 @@ else {
   ok($tmp, "444");
 }
 
-&testcase(13, 'out'); # ok 24
+&testcase(13, 'out'); # ok 24 # macros
 
 # 14 (ok 25)
 &cmt_print('(ok 25)');
@@ -102,7 +113,7 @@ ok($? != 0);
 &cmt_print('(ok 27)');
 okfiles('../testfiles/15.out', 'tmp1');
 
-# 17, old 16
+# 17, old 16 # multiple files
 &cmt_print('(ok 28)');
 copy('../testfiles/16develop.SLeP','tmp.SLeP');
 copy('../testfiles/16.tex','tmp.tex');
@@ -114,18 +125,6 @@ else {
   `cat tmp.SLeP tmp.tex>tmp1`;
 }
 okfiles('../testfiles/16.out', 'tmp1');
-
-# 18, old 17
-&cmt_print('(ok 29)');
-copy('../testfiles/p_t.java','tmp.java');
-`$^X -I. -- starfish -o=tmp1 tmp.java`;
-okfiles('../testfiles/17.out', 'tmp1');
-
-# 19, old 18
-&cmt_print('(ok 30)');
-copy('../testfiles/p_t.java', 'tmp.java');
-`$^X -I. -- starfish -e="$slash_hack\$Release=1" -o=tmp1 tmp.java`;
-okfiles('../testfiles/18.out', 'tmp1');
 
 # 20, old 19
 &cmt_print('(ok 31)');
@@ -186,7 +185,7 @@ sub okfiles {
 	if (!-f $f1)
 	{ die "file $f1 does not exist (to be compared to tmp/$f2)"	}
 	if (! ok(getfile($f2), getfile($f1)) )
-	{ print STDERR "cwd=".getcwd()."Files: $f1 and $f2\n" }
+	{ print TESTLOG "cwd=".getcwd()."Files: $f1 and $f2\n" }
 
     }
 }
@@ -199,22 +198,30 @@ sub testcase {
   my $testnum = shift; &cmt_print($testnum);
   my ($infile, $procfile, $replace, $out, $outfile);
   my $testdir = "test-$testnum";
-  if (-d $testdir) { &rm_dir_recursively($testdir) }
+  #!!!if (-d $testdir) { &rm_dir_recursively($testdir) }
   &my_mkdir($testdir);
   chdir $testdir or die;
   my $testfilesdir = '../../testfiles';
 
-    # example: &testcase(34, 'in:33_tex.in->34.tex -replace -o=34-slides.tex');
-    if ($#_==0 && $_[0] =~ /^in:(\S*)->(\S*) -replace -o=(\S*)$/) {
-      $infile = $1; $procfile = $2; $outfile = $replace = $3;
-    }
-    elsif ( -e "$testfilesdir/$testnum.in" and $#_==-1) {
-      $infile   = "$testnum.in";
-      $procfile = "$testnum.in";
-      $outfile  = "$testnum.out";
-      if ($testnum =~ /_java$/) { $procfile = "$`.java" }
-    }
-    elsif ( -e "$testfilesdir/$testnum.in" and
+  # example: &testcase(34, 'in:33_tex.in->34.tex -replace -o=34-slides.tex');
+  if ($#_==0 && $_[0] =~ /^in:(\S*)->(\S*) -replace -o=(\S*)$/) {
+    $infile = $1; $procfile = $2; $outfile = $replace = $3;
+  }
+  elsif ( -e "$testfilesdir/$testnum.in" and $#_==-1) {
+    $infile   = "$testnum.in";
+    $procfile = "$testnum.in";
+    $outfile  = "$testnum.out";
+    if ($testnum =~ /_java$/) { $procfile = "$`.java" }
+  }
+  elsif ( -e "$testfilesdir/$testnum.in" and $#_==0 and $_[0] eq 'out') {
+    $infile   = "$testnum.in";
+    $procfile = "$testnum.in";
+    $outfile  = "$testnum.out";
+    $out = $outfile;
+    if ($testnum =~ /^\d+-(\w.*)_java$/) {
+      $procfile = "$1.java"; $out = "$1_out.java" }
+  }
+  elsif ( -e "$testfilesdir/$testnum.in" and
 	    $#_==0 and $_[0] eq 'out' ) {
 	$infile   = "$testnum.in";
 	$procfile = "$testnum.in";
@@ -273,17 +280,18 @@ sub testcase {
 	$procfile = "$testnum.py";
 	$outfile = "${testnum}.py.out";
     }
-    else { die }
+    else { die "Test files not found" }
 
-    mycopy("$testfilesdir/$infile", $infile);
-    mycopy("$testfilesdir/$infile", $procfile) if $infile ne $procfile;
-    my $outExpected = "$outfile-expected";
-    my $outfile_masked = $outfile;
-    $outfile_masked =~ s/\.tex$/_tex.out/;
-    if (!-f "$testfilesdir/$outfile" && -f "$testfilesdir/$outfile_masked")
-    { mycopy("$testfilesdir/$outfile_masked", "$outfile-expected"); }
-    else
-    { mycopy("$testfilesdir/$outfile", "$outfile-expected"); }
+  mycopy("$testfilesdir/$infile", $infile);
+  if ($infile ne $procfile) { mycopy("$testfilesdir/$infile", $procfile); }
+  else { mycopy("$infile", "$infile-orig") }
+  my $outExpected = "$outfile-expected";
+  my $outfile_masked = $outfile;
+  $outfile_masked =~ s/\.tex$/_tex.out/;
+  if (!-f "$testfilesdir/$outfile" && -f "$testfilesdir/$outfile_masked")
+  { mycopy("$testfilesdir/$outfile_masked", "$outfile-expected"); }
+  else
+  { mycopy("$testfilesdir/$outfile", "$outfile-expected"); }
     my $outNew      = $procfile;
     my @sfishArgs = ( '-e=$ver="testver"', $procfile );
     if ($replace) {
@@ -295,7 +303,7 @@ sub testcase {
       $outNew = $out;
     }
 
-    putfile('test-description', '# CWD: '.getcwd().
+    putfile('test-description', '# CWD: '.getcwd()."\n".
 	    "# cp $testfilesdir/$outfile $outfile-expected\n".
 	    "# perl -I. -- starfish @sfishArgs\n".
 	    "# starfish_cmd( @sfishArgs );\n".
@@ -326,7 +334,8 @@ sub comparefiles {
       if ($l1 ne $l2) { print STDERR "$f1:$l1", "$f2:$l2" }
       $fc1=$fc1r; $fc2=$fc2r;
     }
-    ok(0);
+    print STDERR "Test failed.\n";
+    ok(0); # File comparison failed
     return;
   }
   ok(1);
