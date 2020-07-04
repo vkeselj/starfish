@@ -40,11 +40,16 @@
 18-p_t_java:   another simple Java test to be used in tandem with the
 	       next one.  files: 18-p_t_java.in 18-p_t_java.out
 	       renamed: 17 with p_t.java and 17.out
+19-p_t_java:   similar to the previous (18) but now with -e option
+	       files: 19-p_t_java.in 19-p_t_java.out
+	       renamed: 18 with p_t.java and 18.out
+20-simple_html: simple test for html style
+21-make:	Makefile test
+
 
 NEEDS RENAMING AND DOC UPDATES:
-18 - simple example with p_t.java
-6 - using -o option, very similar to 10-tex (6.in 6.out)
-8 - test of some functions getmakefilelist (8.in 8.out)
+6 - using -o option, very similar to 10-tex (6.in 6.out) TeX style
+8 - test of some functions getmakefilelist (8.in 8.out) default style
 9 - working with macros, with -o option (9_java.in 9_java.out)
 30 - testing with Loops, HTML style, collecting ToC (30.html.sfish
      30_html.out)

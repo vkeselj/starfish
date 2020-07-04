@@ -16,7 +16,8 @@ Revision history for Perl extension Text::Starfish.
  - testfiles/16-rmHook               was: 4
  - testfiles/17-A_java - a more complex Java test
  - testfiles/18-p_t_java             was: 17
- - testing improvements
+ - testfiles/19-p_t_java             was: 18
+ - testing improvements, and addition of new tests
  - removing variable $Revision
  - started work on separate treatment of output delimiters:
    * to define as a new style variable OutDelimiters, and
@@ -25,6 +26,10 @@ Revision history for Perl extension Text::Starfish.
  - Changing opening output delimiter "\n#+\n" to "#+\n" and similarly to
    other styles.  This is a significant change that may break some existing
    programs. It is an ongoing process for the other styles.
+ - Changes in html style: numbering in delimiters, removal of newline
+ - Changes in makefile style: numbering of delimiters, removal of a newline
+ - Changes in python style: numbering of delimiters, removal of a newline
+ - Changing prototype echo($@) to echo(@)
 
 1.31 13 Jun 2020
  - documentation improvements

@@ -40,8 +40,7 @@ RM=/bin/rm
 #<?
 # echo &test_m(  '2','-d',              't/html/2.htm',         't/html/2.out',            'ok');
 # echo &test_m(  '3','-h -uipp iso',    't/html/3-ipp.html',    't/html/3.out',            'ok');
-#!>
-#+
+#!>#+
 test2: unis_d
 	@echo -n test2: && ./unis_d -d < t/html/2.htm > tmp/tmp && diff tmp/tmp t/html/2.out && echo -n 'ok '
 testr2: unis

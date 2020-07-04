@@ -1,7 +1,6 @@
 #<?
 # echo "test Makefile\nnew line";
-#!>
-#+
+#!>#+
 test Makefile
 new line
 #-
@@ -15,8 +14,7 @@ help:
 starfish: tmp
 	starfish Makefile
 	starfish -o=tmp/a${ano}.tex -replace a${ano}.tex.sfish
-	#<? echo "produce some new stuff" !>
-	#+
+	#<? echo "produce some new stuff" !>#+
 	produce some new stuff
 	#-
 	rsync -av allowedWords tmp/allowedWords
@@ -28,7 +26,6 @@ clean:; ${RM} -v *.aux *.bak *~ *.bbl *.blg *.dvi *.log *.pdf *.ps tmp*
 a_ps=${PUBDIR}/a${ano}/a${ano}.ps
 a_pdf=${PUBDIR}/a${ano}/a${ano}.pdf
 
-#<? @f = ('f1', 'f2'); echo "FILES=@f\n"; !>
-#+
+#<? @f = ('f1', 'f2'); echo "FILES=@f\n"; !>#+
 FILES=f1 f2
 #-

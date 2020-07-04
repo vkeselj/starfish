@@ -228,7 +228,7 @@ sub eval_dispatch {
 	my $r = &{$self->{hook}->[$self->{ttype}]->{replace}}( $self, @{ $self->{args} } );
 	return $r if $self->{REPLACE};
 	return $c if $r eq '';
-	#!!! This line needs to be adapted to use OutDelimiters
+	#!! This line needs to be adapted to use OutDelimiters
 	return $c.$self->{hook}->[0]->{'begin'}.$r.$self->{hook}->[0]->{'end'};
     }
     die;
@@ -469,7 +469,7 @@ sub evaluate_py {
     local $::O = '';
     $self->eval1($code, 'snippet');
 
-    #!!! to update OutDelimiters
+    #!! to update OutDelimiters
     if ($self->{REPLACE}) { return $::O }
     if ($::O ne '') {
 	my $indent = '';
@@ -503,13 +503,21 @@ sub evaluate_py1 {
     local $::Star = $self;
     $self->eval1($code, 'snippet');
 
-    #!!! to update OutDelimiters
     if ($self->{REPLACE}) { return $indent.$::O }
-    elsif ($::O eq '') { return "$indent#$prefix$c!>\n" }
+    elsif ($::O eq '') { return "$indent#$prefix$c!>" }
     else {
       $::O =~ s/^/$indent/gmx;
-      my $r= "$indent#$prefix$c!>\n$indent#+\n".$::O;
-      $r =~ s/\n?$/\n/; $r.="$indent#-\n"; } # no extra \n
+      my $r;
+      my ($b,$e); my @d = @{ $self->{OutDelimiters} };
+      $b = $d[0].$d[1]; my $i; $e = $d[2].$d[3];
+      if (index($::O, $e) != -1) {
+	while(1) { $i++; $e=$d[2].$i.$d[3]; last if index($::O, $e)==-1;
+	  die "Problem finding ending delimiter!\n(O=$::O)" if $i > 1000000;}
+	$b = $d[0].$i.$d[1];
+      }
+      $r= "$indent#$prefix$c!>$b".$::O;
+      $r =~ s/\n?$/\n/; $r.="$indent$e"; # no extra \n
+    }
 }
 
 # predefined evaluator: echo
@@ -826,14 +834,14 @@ sub setStyle {
     #!!should be introduced after all styles are fixed
     #$self->{OutDelimiters} = [ "\n#", "+\n", "#", "-" ];
     $self->{hook}= [
-      #!!!{begin => "\n#+\n", end=>"\n#-\n", f=>sub{return''}}, # Reserved for output
-      {begin => '<?', end => '!>', f => \&evaluate },
+      {begin => '#<?', end => '!>', f => \&evaluate },
+      {begin => '<?',  end => '!>', f => \&evaluate },
       {begin => '<?starfish', end => '?>', f => \&evaluate }
     ];
     $self->{CodePreparation} = 's/\\n(?:#|%|\/\/+)/\\n/g';
 
     # Used for Python and Makefile with &evaluate_py1
-    my $re_py1 = qr/([\ \t]*)\#(\ *<\?)([\000-\377]*?)!>\n/x;
+    my $re_py1 = qr/([\ \t]*)\#(\ *<\?)([\000-\377]*?)!>/x;
     # extension below was a bug for <?...!>...<?...!>#+...#-
     # ([\ \t]*\#+\n[\000-\377]*?\n[\ \t]*\#-\n)?/x;
 
@@ -842,12 +850,22 @@ sub setStyle {
       $self->{OutDelimiters} = [ "#", "+\n", "#", "-" ];
     }
     elsif ($s eq 'makefile') {
+      $self->{OutDelimiters} = [ "#", "+\n", "#", "-" ];
       $self->{hook} = [
-             # Reserved for output (!!to change to OutDelimiters)
-	     {begin => qr/^\s*#\+\n/, end=>qr/\n\s*#-\n/, f=>sub{return""}},
-	    ];
-	$self->addHook($re_py1, \&evaluate_py1);
-	$self->{CodePreparation} = 's/\\n\\s*#/\\n/g';
+        # Reserved for output (!!to change to OutDelimiters)
+        #{begin => qr/^\s*#\+\n/, end=>qr/\n\s*#-\n/, f=>sub{return""}},
+      ];
+      $self->addHook($re_py1, \&evaluate_py1);
+      $self->{CodePreparation} = 's/\\n\\s*#/\\n/g';
+    }
+    elsif ($s eq 'python') {
+      $self->{OutDelimiters} = [ "#", "+\n", "#", "-" ];
+      $self->{hook} = [
+        # !!to change to OutDelimiters
+        #{begin => qr/^\s*#\+\n/, end=>qr/\n\s*#-\n/, f=>sub{return""}},
+      ];
+      $self->addHook($re_py1, \&evaluate_py1);
+      $self->{CodePreparation} = 's/\\n\\s*#/\\n/g';
     }
     elsif ($s eq 'java') {
       $self->{LineComment} = '//';
@@ -859,7 +877,8 @@ sub setStyle {
       $self->{CodePreparation} = 's/^\s*\/\/+//mg';
     }
     elsif ($s eq 'tex') {                          # TeX and LaTeX hooks
-	$self->{LineComment} = '%';
+      $self->{LineComment} = '%';
+      #!!needs update OutDelimiters
 	$self->{hook}=[{begin => "%+\n", end=>"\n%-\n", f=>sub{return''}},  # Reserved for output
 	       {begin => '%<?', end => "!>\n", f => \&evaluate },
 	       {begin => '<?', end => "!>\n", f => \&evaluate },
@@ -867,15 +886,11 @@ sub setStyle {
 
 	$self->{CodePreparation} = 's/^[ \t]*%//mg';
     }
-    elsif ($s eq 'python') {
-	$self->{hook} =
-	    [{begin => qr/^\s*#\+\n/, end=>qr/\n\s*#-\n/, f=>sub{return""}}, # Reserved for output
-	     ];
-	$self->addHook($re_py1, \&evaluate_py1);
-	$self->{CodePreparation} = 's/\\n\\s*#/\\n/g';
-    }
     elsif ($s eq '.html.sfish') {
-	undef $self->{LineComment};
+      undef $self->{LineComment};
+      #!!needs update OutDelimiters
+      #$self->{OutDelimiters} = [ "\n#", "+\n", "#", "-" ];
+
 	$self->{hook}=[{begin => "\n<!-- + -->\n", end=>"\n<!-- - -->\n",   # Reserved for output
 		f=>sub{return''}},
 	       {begin => '<!--<?', end => '!>-->', f => \&evaluate },
@@ -886,18 +901,18 @@ sub setStyle {
 	$self->{CodePreparation} = '';
     }
     elsif ($s eq 'html') {
-	undef $self->{LineComment};
-	$self->{hook}=[{begin => "\n<!-- + -->\n", end=>"\n<!-- - -->\n",   # Reserved for output
-		f=>sub{return''}},
-	       {begin => '<!--<?', end => '!>-->', f => \&evaluate },
-	       #{begin=>'<?', end=>'?>', f=>\&evaluate },
-	       {begin=>'<?starfish ', end=>'?>', f=>\&evaluate }
-        ];
-	$self->{CodePreparation} = '';
+      undef $self->{LineComment}; # Changes
+      $self->{OutDelimiters} = [ "<!-- +", " -->", "<!-- -", " -->" ];
+      $self->{hook}=[
+	{ begin => '<!--<?', end => '!>-->', f => \&evaluate },
+	{ begin=>'<?starfish ', end=>'?>', f=>\&evaluate }
+      ];
+      $self->{CodePreparation} = '';
     }
     elsif ($s eq 'ps') {
-	$self->{LineComment} = '%';
-	$self->{hook}=[{begin => "\n% +\n", end=>"\n% -\n",   # Reserved for output
+      $self->{LineComment} = '%';
+      #!!needs update OutDelimiters
+      $self->{hook}=[{begin => "\n% +\n", end=>"\n% -\n",   # Reserved for output
 		f=>sub{return''}},
 	       {begin => '<?', end => '!>', f => \&evaluate }];
 	$self->{CodePreparation} = 's/\\n%/\\n/g';
@@ -1106,7 +1121,7 @@ sub getmakefilelist ($$) {
 #    addHook($t1, $t2, 's/\n(?:%!)?/\n%!/g');
 #}
 
-sub echo($@) { $::O .= join('', @_) }
+sub echo :prototype(@) { $::O .= join('', @_) }
 
 # used in LaTeX mode to include verbatim textual files
 sub get_verbatim_file {
@@ -1325,10 +1340,8 @@ A simple example, after running C<starfish> on a file containing:
 
 we get the following output:
 
-     <? $O= "Hello world!" !>
-     #+
-     Hello world!
-     #-
+     <? $O= "Hello world!" !>#+
+     Hello world!#-
 
 The output will not change after running the script several times.
 The same effect is achieved with:
@@ -1414,8 +1427,7 @@ Output:
   LIST=first second third\
    fourth fifth
 
-  <? echo join "\n", getmakefilelist $Star->{INFILE}, 'LIST' !>
-  #+
+  <? echo join "\n", getmakefilelist $Star->{INFILE}, 'LIST', "\n" !>#+
   first
   second
   third
@@ -2079,8 +2091,7 @@ For example, in the following expansion:
  starfish: tmp
          starfish Makefile
          #<? if (-e "file.tex.sfish")
-         #{ echo "\tstarfish -o=tmp/file.tex -replace file.tex.sfish" } !>
-         #+
+         #{ echo "\tstarfish -o=tmp/file.tex -replace file.tex.sfish\n" } !>#+
          starfish -o=tmp/file.tex -replace file.tex.sfish
          #-
 
