@@ -55,6 +55,7 @@ testfiles/19-p_t_java.out
 testfiles/20-simple_html.in
 testfiles/20-simple_html.out
 testfiles/21-make/Makefile.in
+testfiles/21-make/Makefile.out
 testfiles/21-make/A.java
 testfiles/21-make/B.java
 testfiles/21-make/C.java

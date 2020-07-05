@@ -65,29 +65,35 @@ my $testdir = "test-$testnum";
 &my_mkdir($testdir);
 chdir $testdir or die;
 my $testfilesdir = "../../testfiles/$testnum";
-mycopy("$testfilesdir/Makefile.in", "Makefile.in");
-mycopy("$testfilesdir/Makefile.in", "Makefile");
+my $insource = "$testfilesdir/Makefile.in"; my $inorig = "Makefile.in";
+my $procfile = "Makefile";
+my $outsource = "$testfilesdir/Makefile.out";
+my $outExpected = "Makefile.out-expected";
+mycopy($insource, $inorig);
+mycopy($insource, $procfile);
+mycopy($outsource, $outExpected);
 for (qw(A B C)) { mycopy("$testfilesdir/$_.java", "$_.java"); }
-my @sfishArgs = ("Makefile");
+my @sfishArgs = ( $procfile );
+my $outNew = $procfile;
 putfile('test-description', '# CWD: '.getcwd()."\n".
 	"# Test preparation:\n".
-	"# cp $testfilesdir/Makefile.in Makefile.in\n".
-	"# cp $testfilesdir/Makefile.in Makefile\n".
+	"# cp $insource $inorig\n".
+	"# cp $insource $procfile\n".
+	"# cp $outsource $outExpected\n".
 	"# cp $testfilesdir/A.java A.java\n".
 	"# cp $testfilesdir/B.java B.java\n".
 	"# cp $testfilesdir/C.java C.java\n".
-	"# cp $testfilesdir/!!!$outfile $outfile-expected\n".
 	"# #option: perl -I. -- starfish @sfishArgs\n".
 	"# starfish_cmd( @sfishArgs );\n".
 	"# diff $outExpected $outNew\n".
-	"# !!If test needs to be updated, input:\n".
-	"# !!cp $infile-orig $testfilesdir/$infile\n".
-	"# !!Output:\n".
-	"# !!cp $outNew $testfilesdir/$outfile\n");
+	"# If test needs to be updated, input:\n".
+	"# cp $inorig $insource\n".
+	"# Output:\n".
+	"# cp $outNew $outsource\n");
 starfish_cmd( @sfishArgs );
-ok(1); #comparefiles($outExpected, $outNew);
+comparefiles($outExpected, $outNew);
 chdir '..' or die;
-		  
+
 &testcase(6, 'out');
 &testcase(8);
 &testcase(9, 'out');

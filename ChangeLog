@@ -1,6 +1,6 @@
 Revision history for Perl extension Text::Starfish.
 
-1.32
+1.32 5 Jul 2020
  - documentation improvements
  - testing improvements: test case renaming:
  - testfiles/07-html-cgi.html.sfish  was: 02.html.sfish

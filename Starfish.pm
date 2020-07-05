@@ -19,7 +19,7 @@ use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS); # Exporter vars
 %EXPORT_TAGS = ( 'all' => [qw(
   appendfile echo file_modification_date 
   file_modification_time getfile getmakefilelist get_verbatim_file
-  getinclude include
+  getinclude htmlquote include
   last_update putfile read_records read_starfish_conf
   sfish_add_tag sfish_ignore_outer starfish_cmd make_gen_dirs_to_generate
   make_add_dirs_to_generate_if_needed
