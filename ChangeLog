@@ -1,8 +1,11 @@
 Revision history for Perl extension Text::Starfish.
 
+1.35 current
+ - documentation improvements
+
 1.34 6 Jul 2020 Mon 13:36:52 ADT
  - documentation improvements
- - fix problem with test 20-simple (unnecessary use of CGI.pm)
+ - fixed problem with test 20-simple (unnecessary use of CGI.pm)
 
 1.33 6 Jul 2020
  - fixing bug with :prototype attribute, I guess it fails on earlier
