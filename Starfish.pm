@@ -31,7 +31,7 @@ use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS); # Exporter vars
 use vars qw($NAME $ABSTRACT $VERSION);
 $NAME     = 'Starfish';
 $ABSTRACT = 'Perl-based System for Preprocessing and Text-Embedded Programming';
-$VERSION  = '1.32';
+$VERSION  = '1.33';
 
 use vars qw(@DirGenerateIfNeeded);
 
@@ -1121,7 +1121,7 @@ sub getmakefilelist ($$) {
 #    addHook($t1, $t2, 's/\n(?:%!)?/\n%!/g');
 #}
 
-sub echo :prototype(@) { $::O .= join('', @_) }
+sub echo(@) { $::O .= join('', @_) }
 
 # used in LaTeX mode to include verbatim textual files
 sub get_verbatim_file {

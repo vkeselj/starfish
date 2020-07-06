@@ -1,5 +1,9 @@
 Revision history for Perl extension Text::Starfish.
 
+1.33 6 Jul 2020
+ - fixing bug with :prototype attribute, I guess it fails on earlier
+   versions of Perl; removing it
+
 1.32 5 Jul 2020
  - documentation improvements
  - testing improvements: test case renaming:
