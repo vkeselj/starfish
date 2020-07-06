@@ -1,5 +1,4 @@
-<!--<? use CGI qw/:standard/;
-       echo comment('AUTOMATICALLY GENERATED - DO NOT EDIT');
+<!--<? echo comment('AUTOMATICALLY GENERATED - DO NOT EDIT');
 !>--><!-- + --><!-- AUTOMATICALLY GENERATED - DO NOT EDIT --><!-- - -->
 <HTML><HEAD>
 <TITLE>Some title</TITLE>

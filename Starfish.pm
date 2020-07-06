@@ -31,7 +31,7 @@ use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS); # Exporter vars
 use vars qw($NAME $ABSTRACT $VERSION);
 $NAME     = 'Starfish';
 $ABSTRACT = 'Perl-based System for Preprocessing and Text-Embedded Programming';
-$VERSION  = '1.33';
+$VERSION  = '1.34';
 
 use vars qw(@DirGenerateIfNeeded);
 

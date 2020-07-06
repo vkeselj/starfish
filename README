@@ -1,4 +1,4 @@
-Text::Starfish version 1.33
+Text::Starfish version 1.34
 ===========================
 Note: The above lines are generated based on the following code:
 <? read_starfish_conf(); &set_readme_line1; !>
