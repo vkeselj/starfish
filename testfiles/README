@@ -1,4 +1,4 @@
-01-use test:    simple test to verify "use Text::Starfish";
+01-use test:	simple test to verify "use Text::Starfish";
 02-simple_java: simple Java example with Test and Release versions
 03-simple_java: simple Java example, similar to 02
 04-simple_java: simple Java with replace
@@ -46,6 +46,8 @@
 20-simple_html: simple test for html style
 21-make:	Makefile test
 
+22-tex		in progress.  Similar to 08-tex but in update mode, in
+		order to fix regex hooks to use OutDelimiters
 
 NEEDS RENAMING AND DOC UPDATES:
 6 - using -o option, very similar to 10-tex (6.in 6.out) TeX style

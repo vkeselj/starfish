@@ -61,7 +61,7 @@ if (&is_module_available('CGI')) {
 $testnum = '21-make';
 &cmt_print($testnum);
 my $testdir = "test-$testnum";
-#!!!if (-d $testdir) { &rm_dir_recursively($testdir) }
+if (-d $testdir) { &rm_dir_recursively($testdir) }
 &my_mkdir($testdir);
 chdir $testdir or die;
 my $testfilesdir = "../../testfiles/$testnum";
@@ -232,7 +232,7 @@ sub testcase {
   my $testnum = shift; &cmt_print($testnum);
   my ($infile, $procfile, $replace, $out, $outfile, @args);
   my $testdir = "test-$testnum";
-  #!!!if (-d $testdir) { &rm_dir_recursively($testdir) }
+  if (-d $testdir) { &rm_dir_recursively($testdir) }
   &my_mkdir($testdir);
   chdir $testdir or die;
   my $testfilesdir = '../../testfiles';

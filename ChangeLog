@@ -1,7 +1,9 @@
 Revision history for Perl extension Text::Starfish.
 
-1.35 current
+1.35 7 Jul 2020 Tue 08:24:21 ADT
  - documentation improvements
+ - fixing bug with test 20-simple_html: removing call to "comment"
+   since CGI module is not available by default
 
 1.34 6 Jul 2020 Mon 13:36:52 ADT
  - documentation improvements

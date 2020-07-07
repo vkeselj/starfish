@@ -1,4 +1,4 @@
-<!--<? echo comment('AUTOMATICALLY GENERATED - DO NOT EDIT');
+<!--<? echo "<"."!-- AUTOMATICALLY GENERATED - DO NOT EDIT --".">";
 !>-->
 <HTML><HEAD>
 <TITLE>Some title</TITLE>
