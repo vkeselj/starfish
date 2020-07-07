@@ -31,7 +31,7 @@ use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS); # Exporter vars
 use vars qw($NAME $ABSTRACT $VERSION);
 $NAME     = 'Starfish';
 $ABSTRACT = 'Perl-based System for Preprocessing and Text-Embedded Programming';
-$VERSION  = '1.35';
+$VERSION  = '1.36';
 
 use vars qw(@DirGenerateIfNeeded);
 
@@ -130,20 +130,20 @@ sub loadinclude($@) {
 }
 
 sub process_files {
-    my $self = shift;
-    my @args = @_;
+  my $self = shift;
+  my @args = @_;
 
-    if (defined $self->{REPLACE} and !defined $self->{OUTFILE})
-    { _croak("Starfish:output file required for replace") }
+  if (defined $self->{REPLACE} and !defined $self->{OUTFILE})
+  { _croak("Starfish:output file required for replace") }
 
-    my $FileCount=0;
-    $self->eval1($self->{INITIAL_CODE}, 'initial');
+  my $FileCount=0;
+  $self->eval1($self->{INITIAL_CODE}, 'initial');
 
-    while (@args) {
-	$self->{INFILE} = shift @args;
-	++$FileCount;
-	$self->setStyle();
-	$self->{data} = getfile $self->{INFILE};
+  while (@args) {
+    $self->{INFILE} = shift @args;
+    ++$FileCount;
+    $self->setStyle();
+    $self->{data} = getfile $self->{INFILE};
 
 	# *123* we need to forbid defining an outfile externally as well as
         # internally:
@@ -1291,44 +1291,31 @@ Text::Starfish.pm and starfish - A Perl-based System for Preprocessing and
 =head1 SYNOPSIS
 
 B<starfish> S<[ B<-o=>I<outputfile> ]> S<[ B<-e=>I<initialcode> ]>
-        S<[ B<-replace> ]> S<[ B<-mode=>I<mode> ]> S<I<file>...>
+        S<[ B<-replace> ]> S<[ B<-mode=>I<mode> ]> S<I<files>...>
 
-where files usually contain some Perl code, delimited by C<E<lt>?> and
-C<!E<gt>>.  To produce output to be inserted into the file, use
-variable C<$O> or function C<echo>.
+where I<files> usually contain some Perl code, delimited by C<E<lt>?> and
+C<!E<gt>>.  Use function C<echo> or variable C<$O> to produce output to be
+inserted into the file.
 
 =head1 DESCRIPTION
 
-(The documentation is probably not up to date.)
+Starfish is a system for Perl-based preprocessing and text-embedded
+programming, based on a universal approach applicable to many
+different text styles.  You can read the documentation contained in
+the file C<report.pdf> for an introduction.  For an initial
+understanding about how Starfish works, you can think of Perl code
+being inserted in arbitary text between C<E<lt>?> and C<!E<gt>>
+delimiters, which can be executed in a similar way as PHP code in an
+HTML file.  Some similar projects exist and some of them are listed in
+L<"SEE ALSO">.  Starfish is has been unique in several ways.  One
+important difference between C<starfish> and similar programs
+(e.g., PHP) is that the output does not necessarily replace the code,
+but it is appended to the code by default.
 
-Starfish is a system for Perl-based text-embedded programming and
-preprocessing, which relies on a unifying regular expression rewriting
-methodology.  If you know Perl and php, you probably know the basic
-idea: embed Perl code inside the text, execute it is some way, and
-interleave the output with the text.   Very similar projects exist and
-some of them are listed in L<"SEE ALSO">.  Starfish is, however,
-unique in several ways.  One important difference between C<starfish>
-and similar programs (e.g. php) is that the output does not
-necessarily replace the code, but it follows the code by default.
-It is attempted with Starfish to provide a universal text-embedded
-programming language, which can be used with different types of
-textual files.
-
-There are two files in this package: a module (Starfish.pm) and a
+The package contains two main files: a module file (Starfish.pm) and a
 small script (starfish) that provides a command-line interface to the
 module.  The options for the script are described in subsection
 "L<starfish_cmd list of file names and options>".
-
-The earlier name of this module was SLePerl (Something Like ePerl),
-but it was changed it to C<starfish> -- sounds better and easier to
-type.  One option was `oyster,' but some people are thinking
-about using it for Perl beans, and there is a (yet another) Perl
-module for embedded Perl C<Text::Oyster>, so it was not used.
-
-The idea with the `C<starfish>' name is: the Perl code is embedded into
-a text, so the text is equivalent to a shellfish containing pearls.
-Starfish is chosen as natural starfish feeds on shellfish, with a difference
-that the system C<starfish> feeds on embedded pearls.
 
 =head1 EXAMPLES
 

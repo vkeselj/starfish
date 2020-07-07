@@ -3,7 +3,7 @@
 #########################
 
 use Test;
-BEGIN { plan tests => 39 };
+BEGIN { plan tests => 42 };
 use Text::Starfish;
 use File::Copy;
 use Carp;
@@ -57,7 +57,6 @@ if (&is_module_available('CGI')) {
 &testcase('19-p_t_java', 'out', '-e=$Release=1');
 &testcase('20-simple_html');
 
-##&testcase('21-make');
 $testnum = '21-make';
 &cmt_print($testnum);
 my $testdir = "test-$testnum";
@@ -94,24 +93,69 @@ starfish_cmd( @sfishArgs );
 comparefiles($outExpected, $outNew);
 chdir '..' or die;
 
+$testnum = '22-hooks'; &cmt_print($testnum);
+my $testdir = "test-$testnum";
+#!!!if (-d $testdir) { &rm_dir_recursively($testdir) }
+&my_mkdir($testdir);
+chdir $testdir or die;
+my $testfilesdir = "../../testfiles/$testnum";
+my $insource = "$testfilesdir/text.in"; my $inorig = "text.in";
+my $procfile = "text.txt";
+my $outsource = "$testfilesdir/text.out";
+my $outExpected = "text.out-expected";
+my $outsourceR = "$testfilesdir/text-replace.out";
+my $outExpectedR = "text-replace.out-expected";
+my $procReplace = "text-replace.out";
+mycopy($insource, $inorig);
+mycopy($insource, $procfile);
+mycopy($outsource, $outExpected);
+mycopy($outsourceR, $outExpectedR);
+mycopy("$testfilesdir/Makefile", "Makefile");
+my @sfishArgs = ( $procfile );
+my @sfishArgs1 = ( $procfile, '-replace', "-o=$procReplace");
+my $outNew = $procfile;
+putfile('test-description', '# CWD: '.getcwd()."\n".
+	"# Test preparation:\n".
+	"# cp $insource $inorig\n".
+	"# cp $insource $procfile\n".
+	"# cp $outsource $outExpected\n".
+	"# cp $testfilesdir/text-replace.out text-replace.out-expected\n".
+	"# #option: perl -I. -- starfish @sfishArgs\n".
+	"# starfish_cmd( @sfishArgs );\n".
+	"# diff $outExpected $outNew\n".
+	"# #option: perl -I. -- starfish @sfishArgs1\n".
+	"# starfish_cmd( @sfishArgs1 );\n".
+	"# diff $outExpectedR $procReplace\n".
+	"# If test needs to be updated, input:\n".
+	"# cp $inorig $insource\n".
+	"# Output:\n".
+	"# cp $outNew $outsource\n".
+        "# cp $procReplace $outsourceR\n");
+starfish_cmd( @sfishArgs );
+comparefiles($outExpected, $outNew);
+&cmt_print('22-hooks(2)');
+starfish_cmd( @sfishArgs1 );
+comparefiles('text-replace.out-expected', 'text-replace.out');
+chdir '..' or die;
+
 &testcase(6, 'out');
 &testcase(8);
 &testcase(9, 'out');
 &testcase(30); # html.sfish to html (16 ok)
 
-&cmt_print('(ok 24)');
+&cmt_print('(ok 26)');
 copy('../testfiles/9_java.out', '9_java.out');
 starfish_cmd(qw(-o=10_java.out -e=$Starfish::HideMacros=1 9_java.out));
 ok(getfile('10_java.out'),
    getfile("../testfiles/10_java.out"));
 
-&cmt_print('(ok 25)'); # Macros testing
+&cmt_print('(ok 27)'); # Macros testing
 copy('../testfiles/10_java.out', '10.java');
 starfish_cmd(qw(-o=11_java.out 10.java));
 ok(getfile('11_java.out'),
    getfile("../testfiles/11_java.out"));
 
-&cmt_print('(ok 26)'); # option mode testing
+&cmt_print('(ok 28)'); # option mode testing
 `echo "OSNAME | $OSNAME |"`;
 # Skip if it is windows
 if ($^O =~ m/MSWin/) {
@@ -132,22 +176,22 @@ else {
 &testcase(13, 'out'); # ok 24 # macros
 
 # 14
-&cmt_print('(ok 28)');
+&cmt_print('(ok 30)');
 copy('../testfiles/13_java.in','14.java');
 #`perl -I. -- starfish -o=14.out -e="$slash_hack\$Star::HideMacros=1" 14.java`;
 starfish_cmd(qw(-o=14.out -e=$Star::HideMacros=1 14.java));
 comparefiles('../testfiles/14.out', '14.out');
 
 # 15,16
-&cmt_print('(ok 29)');
+&cmt_print('(ok 31)');
 copy('../testfiles/15.java','tmp.java');
 `$^X -I. -- starfish -o=tmp.ERR -e="$slash_hack\$Star::HideMacros=1" tmp.java>tmp1 2>&1`;
 ok($? != 0);
-&cmt_print('(ok 30)');
+&cmt_print('(ok 32)');
 okfiles('../testfiles/15.out', 'tmp1');
 
 # 17, old 16 # multiple files
-&cmt_print('(ok 31)');
+&cmt_print('(ok 33)');
 copy('../testfiles/16develop.SLeP','tmp.SLeP');
 copy('../testfiles/16.tex','tmp.tex');
 `$^X -I. -- starfish tmp.SLeP tmp.tex`;
@@ -160,7 +204,7 @@ else {
 okfiles('../testfiles/16.out', 'tmp1');
 
 # 20, old 19
-&cmt_print('(ok 32)');
+&cmt_print('(ok 34)');
 if ($^O =~ m/MSWin/) {
   skip('Skipped under windows...');
 } else {
@@ -174,7 +218,7 @@ if ($^O =~ m/MSWin/) {
 }
 
 # 21, old 20 has to be done after previous
-&cmt_print('(ok 33)');
+&cmt_print('(ok 35)');
 if ($^O =~ m/MSWin/) {
   skip('Skipped under windows...');
 } else {
@@ -187,7 +231,7 @@ if ($^O =~ m/MSWin/) {
 }
 
 # 22, old 21
-&cmt_print('(ok 34)');
+&cmt_print('(ok 36)');
 copy('../testfiles/21.html','tmp2.html');
 `$^X -I. -- starfish -replace -o=tmp1 tmp2.html`;
 okfiles('../testfiles/21.out', 'tmp1');
@@ -200,7 +244,7 @@ okfiles('../testfiles/21.out', 'tmp1');
 #okfiles('../testfiles/24.py.out', '24.py');
 
 # 26
-&cmt_print('(ok 37)');
+&cmt_print('(ok 39)');
 copy('../testfiles/26_include_example.html','26_include_example.html');
 copy('../testfiles/26_include_example1.html','26_include_example1.html');
 starfish_cmd(qw(-replace -o=26-out.html 26_include_example.html));
@@ -210,6 +254,7 @@ okfiles('../testfiles/26-out.html', '26-out.html');
 &testcase(33, 'in:33_tex.in->33.tex -replace -o=33-lecture.tex');
 &testcase(34, 'in:33_tex.in->34.tex -replace -o=34-slides.tex');
 &testcase(35, 'in:35_tex.in->35.tex -replace -o=35-slides.tex');
+
 
 sub okfiles {
     my $f1 = shift;
@@ -232,7 +277,7 @@ sub testcase {
   my $testnum = shift; &cmt_print($testnum);
   my ($infile, $procfile, $replace, $out, $outfile, @args);
   my $testdir = "test-$testnum";
-  if (-d $testdir) { &rm_dir_recursively($testdir) }
+  #!!!if (-d $testdir) { &rm_dir_recursively($testdir) }
   &my_mkdir($testdir);
   chdir $testdir or die;
   my $testfilesdir = '../../testfiles';
