@@ -18,3 +18,13 @@ We will try this hook here:
 #-
 The next line.
 
+Let us now experiment with removing and adding hooks.
+<? rm_hook('be', '<?', '!'.'>');
+   add_hook('be', '<?new', '!'.'>');
+!>
+
+<? echo "This should not work." !>
+<?new echo "But, this should."  !>
+#+
+But, this should.
+#-

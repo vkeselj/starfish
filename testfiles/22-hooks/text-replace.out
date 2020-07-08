@@ -12,3 +12,8 @@ We will try this hook here:
 <a name="overview"><h3>Document Overview</h3></a>
 The next line.
 
+Let us now experiment with removing and adding hooks.
+
+
+<? echo "This should not work." !>
+But, this should.

@@ -261,7 +261,7 @@ okfiles('../testfiles/26-out.html', '26-out.html');
 sub prep_dir_cd {
   my $testnum = shift; &cmt_print($testnum); my $testdir = "test-$testnum";
   # comment out next line for testcase debugging
-  if (-d $testdir) { &rm_dir_recursively($testdir) }
+  #!!! if (-d $testdir) { &rm_dir_recursively($testdir) }
   &my_mkdir($testdir); chdir $testdir or die; }
 
 sub okfiles {

@@ -20,7 +20,7 @@ use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS); # Exporter vars
   add_hook appendfile echo file_modification_date 
   file_modification_time getfile getmakefilelist get_verbatim_file
   getinclude htmlquote include
-  last_update putfile read_records read_starfish_conf set_out_delimiters
+  last_update putfile read_records read_starfish_conf rm_hook set_out_delimiters
   sfish_add_tag sfish_ignore_outer starfish_cmd make_gen_dirs_to_generate
   make_add_dirs_to_generate_if_needed
   ) ] );
@@ -984,7 +984,10 @@ sub add_hook {
 		  "(TODO?): ref regex(".ref($regex).
 		  "), ref replace(".ref($replace).")" ) }
     push @{$hooks}, $hook;
-	
+  } elsif ($ht eq 'be') {
+    my $b = shift; my $e = shift; my $f='default';
+    if ($#_>-1) { $f = shift }
+    $self->addHook($b, $e, $f);
   } else { _croak("add_hook error, unknown hook type `$ht'") }
 }
 

@@ -20,8 +20,8 @@ help:
 
 .PHONY: help em1 em2 cp-back-in cp-back-o cp-back-or cp-back-m test
 test:; make -C ../.. test
-em1:; emacs -nw text.in text.out-expected
-em2:; emacs -nw text.in text-replace.out
+em1:; emacs -nw ${in} ${procf}
+em2:; emacs -nw ${in} ${outr}
 cp-back-in:; cp ${in} ${insource}
 cp-back-o:;  cp ${procf} ${outsource}
 cp-back-or:; cp ${outr} ${outrsource}
