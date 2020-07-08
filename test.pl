@@ -3,7 +3,7 @@
 #########################
 
 use Test;
-BEGIN { plan tests => 42 };
+BEGIN { plan tests => 46 };
 use Text::Starfish;
 use File::Copy;
 use Carp;
@@ -57,12 +57,8 @@ if (&is_module_available('CGI')) {
 &testcase('19-p_t_java', 'out', '-e=$Release=1');
 &testcase('20-simple_html');
 
-$testnum = '21-make';
-&cmt_print($testnum);
+$testnum = '21-make'; &prep_dir_cd($testnum);
 my $testdir = "test-$testnum";
-if (-d $testdir) { &rm_dir_recursively($testdir) }
-&my_mkdir($testdir);
-chdir $testdir or die;
 my $testfilesdir = "../../testfiles/$testnum";
 my $insource = "$testfilesdir/Makefile.in"; my $inorig = "Makefile.in";
 my $procfile = "Makefile";
@@ -93,11 +89,8 @@ starfish_cmd( @sfishArgs );
 comparefiles($outExpected, $outNew);
 chdir '..' or die;
 
-$testnum = '22-hooks'; &cmt_print($testnum);
+$testnum = '22-hooks'; &prep_dir_cd($testnum);
 my $testdir = "test-$testnum";
-#!!!if (-d $testdir) { &rm_dir_recursively($testdir) }
-&my_mkdir($testdir);
-chdir $testdir or die;
 my $testfilesdir = "../../testfiles/$testnum";
 my $insource = "$testfilesdir/text.in"; my $inorig = "text.in";
 my $procfile = "text.txt";
@@ -136,6 +129,13 @@ comparefiles($outExpected, $outNew);
 &cmt_print('22-hooks(2)');
 starfish_cmd( @sfishArgs1 );
 comparefiles('text-replace.out-expected', 'text-replace.out');
+&cmt_print('22-hooks(3)'); # Running second time
+starfish_cmd( @sfishArgs );
+comparefiles($outExpected, $outNew);
+&cmt_print('22-hooks(4)');
+starfish_cmd( @sfishArgs1 );
+comparefiles('text-replace.out-expected', 'text-replace.out');
+
 chdir '..' or die;
 
 &testcase(6, 'out');
@@ -255,6 +255,14 @@ okfiles('../testfiles/26-out.html', '26-out.html');
 &testcase(34, 'in:33_tex.in->34.tex -replace -o=34-slides.tex');
 &testcase(35, 'in:35_tex.in->35.tex -replace -o=35-slides.tex');
 
+########################################################################
+# Subroutines used in testing script
+
+sub prep_dir_cd {
+  my $testnum = shift; &cmt_print($testnum); my $testdir = "test-$testnum";
+  # comment out next line for testcase debugging
+  if (-d $testdir) { &rm_dir_recursively($testdir) }
+  &my_mkdir($testdir); chdir $testdir or die; }
 
 sub okfiles {
     my $f1 = shift;
@@ -274,12 +282,9 @@ sub okfiles {
 # $outfile  - name of the expected outfile in the testdir
 # @args     - additional sfish arguments
 sub testcase {
-  my $testnum = shift; &cmt_print($testnum);
+  my $testnum = shift; &prep_dir_cd($testnum);
   my ($infile, $procfile, $replace, $out, $outfile, @args);
   my $testdir = "test-$testnum";
-  #!!!if (-d $testdir) { &rm_dir_recursively($testdir) }
-  &my_mkdir($testdir);
-  chdir $testdir or die;
   my $testfilesdir = '../../testfiles';
 
   # example: &testcase(34, 'in:33_tex.in->34.tex -replace -o=34-slides.tex');

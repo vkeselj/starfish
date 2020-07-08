@@ -17,10 +17,10 @@ use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS); # Exporter vars
 
 @ISA = qw(Exporter);
 %EXPORT_TAGS = ( 'all' => [qw(
-  appendfile echo file_modification_date 
+  add_hook appendfile echo file_modification_date 
   file_modification_time getfile getmakefilelist get_verbatim_file
   getinclude htmlquote include
-  last_update putfile read_records read_starfish_conf
+  last_update putfile read_records read_starfish_conf set_out_delimiters
   sfish_add_tag sfish_ignore_outer starfish_cmd make_gen_dirs_to_generate
   make_add_dirs_to_generate_if_needed
   ) ] );
@@ -220,18 +220,19 @@ sub process_files {
 # eval_dispatch should see how to properly call the evaluator, or replacement
 # eventually it should also be used for string-based evaluators
 sub eval_dispatch {
-    my $self = shift;
-    my $hook = $self->{hook}->[$self->{ttype}];
-    if ($hook->{ht} eq 'regex') {
-	local $::Star = $self;
-	my $c = $self->{args}->[0];
-	my $r = &{$self->{hook}->[$self->{ttype}]->{replace}}( $self, @{ $self->{args} } );
-	return $r if $self->{REPLACE};
-	return $c if $r eq '';
-	#!! This line needs to be adapted to use OutDelimiters
-	return $c.$self->{hook}->[0]->{'begin'}.$r.$self->{hook}->[0]->{'end'};
-    }
-    die;
+  my $self = shift;
+  my $hook = $self->{hook}->[$self->{ttype}];
+  if ($hook->{ht} eq 'regex') {
+    local $::Star = $self;
+    my $c = $self->{args}->[0];
+    my $r = &{$self->{hook}->[$self->{ttype}]->{replace}}( $self, @{ $self->{args} } );
+    return $r if $self->{REPLACE};
+    return $c if $r eq '';
+    #!! This line needs to be adapted to use OutDelimiters
+    #return $c.$self->{hook}->[0]->{'begin'}.$r.$self->{hook}->[0]->{'end'};
+    return $c."".$self->_output_wrap($r);
+  }
+  die;
 }
 
 sub digest {
@@ -437,19 +438,24 @@ sub evaluate {
     if ($::O ne '') {
       my ($b, $e);
       if (defined($self->{OutDelimiters})) {
-	my @d = @{ $self->{OutDelimiters} };
-	$b = $d[0].$d[1]; my $i; $e = $d[2].$d[3];
-	if (index($::O, $e) != -1) {
-	  while(1) { $i++; $e=$d[2].$i.$d[3]; last if index($::O, $e)==-1;
-            die "Problem finding ending delimiter!\n(O=$::O)" if $i > 1000000;}
-	  $b = $d[0].$i.$d[1];
-	}
+	$suf.= $self->_output_wrap($::O);
       } else { $b = $self->{hook}->[0]->{'begin'};
-	       $e = $self->{hook}->[0]->{'end'}; }
-	  $suf.=$b.$::O.$e;
+	       $e = $self->{hook}->[0]->{'end'};
+	       $suf.=$b.$::O.$e; }
     }	  
     return "$pref$c$suf";
-}
+  }
+
+# Wrap output with output delimiters
+sub _output_wrap {
+  my $self = shift; my $out = shift; my @d = ("#","+\n","#","-");
+  @d = @{ $self->{OutDelimiters} } if defined( $self->{OutDelimiters} );
+  my ($b,$e) = ($d[0].$d[1], $d[2].$d[3]); my $i;
+  if (index($out, $e) != -1) {
+    while(1) { $i++; $e=$d[2].$i.$d[3]; last if index($out, $e)==-1;
+      _croak("Problem finding ending delimiter!\n(O=$out)") if $i > 1000000;}
+    $b = $d[0].$i.$d[1]; }
+  return $b.$out.$e; }
 
 # Python-specific evaluator (used also for makefile style)
 sub evaluate_py {
@@ -512,7 +518,8 @@ sub evaluate_py1 {
       $b = $d[0].$d[1]; my $i; $e = $d[2].$d[3];
       if (index($::O, $e) != -1) {
 	while(1) { $i++; $e=$d[2].$i.$d[3]; last if index($::O, $e)==-1;
-	  die "Problem finding ending delimiter!\n(O=$::O)" if $i > 1000000;}
+		   _croak("Problem finding ending delimiter!\n(O=$::O)")
+		     if $i > 1000000; }
 	$b = $d[0].$i.$d[1];
       }
       $r= "$indent#$prefix$c!>$b".$::O;
@@ -879,10 +886,10 @@ sub setStyle {
     elsif ($s eq 'tex') {                          # TeX and LaTeX hooks
       $self->{LineComment} = '%';
       #!!needs update OutDelimiters
-	$self->{hook}=[{begin => "%+\n", end=>"\n%-\n", f=>sub{return''}},  # Reserved for output
-	       {begin => '%<?', end => "!>\n", f => \&evaluate },
-	       {begin => '<?', end => "!>\n", f => \&evaluate },
-	       {begin => '<?', end => "!>", f => \&evaluate }];
+      $self->{hook}=[{begin => "%+\n", end=>"\n%-\n", f=>sub{return''}},
+		     {begin => '%<?', end => "!>\n", f => \&evaluate },
+		     {begin => '<?', end => "!>\n", f => \&evaluate },
+		     {begin => '<?', end => "!>", f => \&evaluate }];
 
 	$self->{CodePreparation} = 's/^[ \t]*%//mg';
     }
@@ -952,22 +959,33 @@ sub ignore_outer {
   $self->{IgnoreOuter} = $newignoreouter;
 }
 
+sub set_out_delimiters {
+  my $self = shift;
+  if (ref($self) ne 'Text::Starfish')
+  { unshift @_, $self; $self = $::Star; }
+  _croak("OutDelimiters must be array of 4 elements:(@_)") if scalar(@_)!=4;
+  $self->{OutDelimiters} = [ $_[0], $_[1], $_[2], $_[3] ]; }
+  
 sub add_hook {
-    my $self = shift; my $ht = shift;
-    my $hooks = $self->{hook}; my $hook = { ht=>$ht };
-    if ($ht eq 'regex') {
-	my $regex=shift; my $replace = shift;
-	$hook->{regex} = $regex;
-	if (ref($replace) eq '' && $replace eq 'comment')
-	{ $hook->{replace} = \&repl_comment }
-	elsif (ref($replace) eq 'CODE')
-	{ $hook->{replace} = $replace }
-	else { _croak("add_hook, undefined regex format input ".
-	              "(TODO?): ref regex(".ref($regex).
-		      "), ref replace(".ref($replace).")" ) }
-	push @{$hooks}, $hook;
+  my $self = shift;
+  if (ref($self) ne 'Text::Starfish')
+  { unshift @_, $self; $self = $::Star; }
+
+  my $ht = shift;
+  my $hooks = $self->{hook}; my $hook = { ht=>$ht };
+  if ($ht eq 'regex') {
+    my $regex=shift; my $replace = shift;
+    $hook->{regex} = $regex;
+    if (ref($replace) eq '' && $replace eq 'comment')
+    { $hook->{replace} = \&repl_comment }
+    elsif (ref($replace) eq 'CODE')
+    { $hook->{replace} = $replace }
+    else { _croak("add_hook, undefined regex format input ".
+		  "(TODO?): ref regex(".ref($regex).
+		  "), ref replace(".ref($replace).")" ) }
+    push @{$hooks}, $hook;
 	
-    } else { _croak("add_hook error, unknown hook type `$ht'") }
+  } else { _croak("add_hook error, unknown hook type `$ht'") }
 }
 
 # addHook is deprecated.  Use add_hook, which contains the hook type
@@ -1019,18 +1037,30 @@ sub addHook {
     $self->{hook} = \@Hook;
 }
 
+sub rm_hook {
+  my $self = shift;
+  if (ref($self) ne 'Text::Starfish')
+  { unshift @_, $self; $self = $::Star; }
+
+  my $ht = shift; # hook type: be (begin-end)
+  if ($ht eq 'be') {
+    my $b=shift; my $e=shift;
+    my @Hooks = @{ $self->{hook} }; my @Hooks1;
+    foreach my $h (@Hooks) {
+      if ($h->{begin} eq $b and $h->{end} eq $e) {}
+      else { push @Hooks1, $h }
+    }
+    $self->{hook} = \@Hooks1;
+  } else {
+    _croak("rm_hook not implemented for type ht=($ht)") }
+}
+
+# rmHook to be deprecated.  Needs to be replaced with rm_hook
 sub rmHook {
     my $self = shift;
     my $p = shift;
     my $s = shift;
-    my @Hook = @{ $self->{hook} };
-    my @Hook1 = ();
-    foreach my $h (@Hook) {
-	if ($h->{begin} eq $p and $h->{end} eq $s) {}
-	else { push @Hook1, $h }
-    }
-    $self->{hook} = \@Hook1;
-}
+    $self->rm_hook('be', $p, $s); return; }
 
 sub rmAllHooks {
     my $self = shift;
@@ -1692,10 +1722,11 @@ C<$Star-E<gt>add_tag($tag, $action)>.  Examples:
 
 See C<sfish_add_tag> for a few more details.
 
-=head2 $o->add_hook($ht,...)
+=head2 $o->add_hook($ht,...) -- (and function add_hook)
 
 Adds a new hook.  The first argument is the hook type, which is a
-string.  The following is the list of hook types with descriptions:
+string.  If use as the function, it will run on C<$::Star> object.
+The following is the list of hook types with descriptions:
 
 =over 5
 
@@ -1723,7 +1754,7 @@ will produce the following output, in the replace mode:
 
 =back
 
-=head2 $o->addHook
+=head2 $o->addHook -- deprecated, should use add_hook
 
 This method is deprecated.  It will be gradually replaced with
 add_hook, which is better defined since it includes hook type.
@@ -1802,10 +1833,16 @@ Similar to the function starfish_cmd, but it expects already built
 Starfish object with properly set options.  Actually, starfish_cmd
 calls this method after creating the object and returns the object.
 
-=head2 $o->rmHook($p,$s)
+=head2 $o->rmHook($p,$s) -- deprecated, should use rm_hook
 
 Removes a hook specified by the starting delimiter $p, and the ending
 delimiter $s.
+
+=head2 $o->rm_hook($ht,...) -- and function rm_hook
+
+Removes a hook. Example:
+
+ rm_hook('be', '<?', '!>');  # removes all hooks with give begin and end
 
 =head2 $o->rmAllHooks()
 
@@ -1979,13 +2016,9 @@ output file in order to write to that file, if needed.
 
 Those were the options.
 
-=head2 appendfile I<filename>, I<list>
+=head2 echo I<list>
 
-appends list elements to the file.
-
-=head2 echo I<string>
-
-appends string to the special variable $0.
+appends all elements of the list to the special variable $0.
 
 =head2 DATA FUNCTIONS
 
@@ -2031,7 +2064,11 @@ Returns modification date of this file (in format: Month DD, YYYY).
 
 =head2 FILE FUNCTIONS
 
-=head3 getfile($filename)
+=head3 appendfile $filename, @list
+
+appends list elements to the file.
+
+=head3 getfile $filename
 
 reads the contents of the file into a string or a list.
 
@@ -2047,7 +2084,7 @@ in the makefile named C<$makefilename>; for example:
 
 Embedded variables are not handled.
 
-=head3 putfile($filename,@list)
+=head3 putfile $filename, @list
 
 Opens the file C<$filename>, wries the list elements to the file, and closes
 it. `C<putfile> I<filename>' will only touch the file.

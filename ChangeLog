@@ -2,6 +2,11 @@ Revision history for Perl extension Text::Starfish.
 
 1.36 current
  - documentation improvements
+ - added test 22-hooks in order to more thoroughly test hooks
+ - testing improvements (refactoring), introducing Makefile for development
+ - making add_hook available as the function
+ - adding function set_out_delimiters
+ - introducing rm_hook, to depricate rmHook
 
 1.35 7 Jul 2020 Tue 08:24:21 ADT
  - documentation improvements
