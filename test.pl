@@ -90,7 +90,6 @@ comparefiles($outExpected, $outNew);
 chdir '..' or die;
 
 $testnum = '22-hooks'; &prep_dir_cd($testnum);
-my $testdir = "test-$testnum";
 my $testfilesdir = "../../testfiles/$testnum";
 my $insource = "$testfilesdir/text.in"; my $inorig = "text.in";
 my $procfile = "text.txt";
@@ -135,7 +134,6 @@ comparefiles($outExpected, $outNew);
 &cmt_print('22-hooks(4)');
 starfish_cmd( @sfishArgs1 );
 comparefiles('text-replace.out-expected', 'text-replace.out');
-
 chdir '..' or die;
 
 &testcase(6, 'out');
@@ -191,20 +189,39 @@ ok($? != 0);
 okfiles('../testfiles/15.out', 'tmp1');
 
 # 17, old 16 # multiple files
-&cmt_print('(ok 33)');
-copy('../testfiles/16develop.SLeP','tmp.SLeP');
-copy('../testfiles/16.tex','tmp.tex');
-`$^X -I. -- starfish tmp.SLeP tmp.tex`;
-if ($^O =~ m/MSWin/) {
-  `copy /B /Y tmp.SLeP+tmp.tex tmp1`;
-}
-else {
-  `cat tmp.SLeP tmp.tex>tmp1`;
-}
-okfiles('../testfiles/16.out', 'tmp1');
+$testnum='37-tex-multif'; &prep_dir_cd($testnum);
+my $testfilesdir = "../../testfiles";
+mycopy("$testfilesdir/16develop.SLeP", 'tmp.SLeP');
+mycopy("$testfilesdir/16develop.SLeP", 'orig-tmp.SLeP');
+mycopy("$testfilesdir/16.tex", 'tmp.tex');
+mycopy("$testfilesdir/16.tex", 'orig-tmp.tex');
+mycopy("$testfilesdir/16.out", '16.out');
+my @sfishArgs= qw(tmp.SLeP tmp.tex);
+# `$^X -I. -- ../starfish tmp.SLeP tmp.tex`;
+putfile('test-description', '# CWD: '.getcwd()."\n".
+	"# Test preparation:\n".
+	"# cp $testfilesdir/16develop.SLeP tmp.SLeP\n".
+	"# cp $testfilesdir/16develop.SLeP orig-tmp.SLeP\n".
+	"# cp $testfilesdir/16.tex tmp.tex\n".
+	"# cp $testfilesdir/16.tex orig-tmp.tex\n".
+	"# cp $testfilesdir/16.out 16.out\n".
+	"# opt: $^X -I. -- ../starfish tmp.SLeP tmp.tex\n".
+	"# starfish_cmd( @sfishArgs ); \n".
+	"# cat tmp.SLeP tmp.tex > tmp1\n".
+	"# diff 16.out tmp1\n");
+starfish_cmd( @sfishArgs );
+#if ($^O =~ m/MSWin/) {
+#  `copy /B /Y tmp.SLeP+tmp.tex tmp1`;
+#}
+#else {
+#  `cat tmp.SLeP tmp.tex>tmp1`;
+#}
+putfile "tmp1", (getfile("tmp.SLeP").getfile("tmp.tex"));
+okfiles("16.out", 'tmp1');
+chdir '..' or die;
 
 # 20, old 19
-&cmt_print('(ok 34)');
+&cmt_print('(ok 38)');
 if ($^O =~ m/MSWin/) {
   skip('Skipped under windows...');
 } else {
@@ -218,7 +235,7 @@ if ($^O =~ m/MSWin/) {
 }
 
 # 21, old 20 has to be done after previous
-&cmt_print('(ok 35)');
+&cmt_print('(ok 39)');
 if ($^O =~ m/MSWin/) {
   skip('Skipped under windows...');
 } else {
@@ -231,7 +248,7 @@ if ($^O =~ m/MSWin/) {
 }
 
 # 22, old 21
-&cmt_print('(ok 36)');
+&cmt_print('(ok 40)');
 copy('../testfiles/21.html','tmp2.html');
 `$^X -I. -- starfish -replace -o=tmp1 tmp2.html`;
 okfiles('../testfiles/21.out', 'tmp1');
@@ -244,7 +261,7 @@ okfiles('../testfiles/21.out', 'tmp1');
 #okfiles('../testfiles/24.py.out', '24.py');
 
 # 26
-&cmt_print('(ok 39)');
+&cmt_print('(ok 43)');
 copy('../testfiles/26_include_example.html','26_include_example.html');
 copy('../testfiles/26_include_example1.html','26_include_example1.html');
 starfish_cmd(qw(-replace -o=26-out.html 26_include_example.html));
@@ -261,20 +278,17 @@ okfiles('../testfiles/26-out.html', '26-out.html');
 sub prep_dir_cd {
   my $testnum = shift; &cmt_print($testnum); my $testdir = "test-$testnum";
   # comment out next line for testcase debugging
-  #!!! if (-d $testdir) { &rm_dir_recursively($testdir) }
+  if (-d $testdir) { &rm_dir_recursively($testdir) }
   &my_mkdir($testdir); chdir $testdir or die; }
 
 sub okfiles {
-    my $f1 = shift;
-    while (@_) {
-	my $f2 = shift;
-	if (!-f $f1)
-	{ die "file $f1 does not exist (to be compared to tmp/$f2)"	}
-	if (! ok(getfile($f2), getfile($f1)) )
-	{ print TESTLOG "cwd=".getcwd()."Files: $f1 and $f2\n" }
-
-    }
-}
+  my $f1 = shift;
+  while (@_) {
+    my $f2 = shift;
+    if (!-f $f1)
+    { die "file $f1 does not exist (to be compared to tmp/$f2)"	}
+    if (! ok(getfile($f2), getfile($f1)) )
+    { print TESTLOG "cwd=".getcwd()."Files: $f1 and $f2\n" }}}
 
 # $testnum  - test id, starting with number, but could have a suffix; e.g. 01-a
 # $infile   - name of the original input test file (in testdir)

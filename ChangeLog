@@ -7,6 +7,7 @@ Revision history for Perl extension Text::Starfish.
  - making add_hook available as the function
  - adding function set_out_delimiters
  - introducing rm_hook, to depricate rmHook
+ - finished change of 0-hook to OutDelimiters parameter
 
 1.35 7 Jul 2020 Tue 08:24:21 ADT
  - documentation improvements
