@@ -1566,7 +1566,7 @@ I<Note:> This is a quite old part of Starfish and needs a revision.
 Macros are a form of code folding (related terms: holophrasting,
 ellusion(?)), expressed in the Starfish framework.
 
-Starfish includes a set of macro features (primitive, but in progress).
+Starfish includes a set of macro features in an experimental phase.
 There are two modes, hidden macros and not hidden, which are indicated
 using variable $Star->{HideMacros}, e.g.:
 
