@@ -136,6 +136,10 @@ starfish_cmd( @sfishArgs1 );
 comparefiles('text-replace.out-expected', 'text-replace.out');
 chdir '..' or die;
 
+$testnum = '23-methods'; &prep_dir_cd($testnum);
+require "../../testfiles/$testnum/test.pl";
+chdir '..' or die;
+
 &testcase(6, 'out');
 &testcase(8);
 &testcase(9, 'out');
@@ -278,7 +282,7 @@ okfiles('../testfiles/26-out.html', '26-out.html');
 sub prep_dir_cd {
   my $testnum = shift; &cmt_print($testnum); my $testdir = "test-$testnum";
   # comment out next line for testcase debugging
-  if (-d $testdir) { &rm_dir_recursively($testdir) }
+  #!!!if (-d $testdir) { &rm_dir_recursively($testdir) }
   &my_mkdir($testdir); chdir $testdir or die; }
 
 sub okfiles {
