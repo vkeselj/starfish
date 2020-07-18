@@ -11,7 +11,7 @@ WriteMakefile(
       #ABSTRACT_FROM => 'Starfish.pm', # retrieve abstract from module
 	AUTHOR     => 'Vlado Keselj http://web.cs.dal.ca/~vlado and '.
 	              'contributing authors',
-	LICENSE          => 'perlartistic',
+	LICENSE          => 'artistic_1',
        ) : ()),
     'dist'  => {'COMPRESS'=>'gzip', 'SUFFIX' => 'gz'},
     'clean' => {FILES => "tmp* Text *~"},
