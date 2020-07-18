@@ -7,11 +7,15 @@
 # command "perldoc Starfish.pm".
 
 package Text::Starfish;
+use vars qw($NAME $ABSTRACT $VERSION);
+$NAME     = 'Text::Starfish';
+$ABSTRACT = 'Perl-based System for Preprocessing and Text-Embedded Programming';
+$VERSION  = '1.37';
+
 use strict;
 use POSIX;
 use Carp;
 use Cwd qw(cwd);
-
 use Exporter;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS); # Exporter vars
 
@@ -27,12 +31,7 @@ use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS); # Exporter vars
 @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT = @{ $EXPORT_TAGS{'all'} };
 
-# updated here and in META.yml
-use vars qw($NAME $ABSTRACT $VERSION);
-$NAME     = 'Starfish';
-$ABSTRACT = 'Perl-based System for Preprocessing and Text-Embedded Programming';
-$VERSION  = '1.37';
-
+# Used in starfishing Makefiles
 use vars qw(@DirGenerateIfNeeded);
 
 # non-exported package globals
@@ -1317,7 +1316,7 @@ __END__
 
 =head1 NAME
 
-Text::Starfish.pm and starfish - A Perl-based System for Preprocessing and
+Text::Starfish.pm and starfish - Perl-based System for Preprocessing and
       Text-Embedded Programming
 
 
@@ -2174,8 +2173,8 @@ on small-memory machines and with huge files.
 =head1 THANKS
 
 I'd like to thank Steve Yeago, Tony Cox, Tony Abou-Assaleh for
-comments, and Charles Ikeson for suggesting the include function and
-other comments.
+comments, Charles Ikeson for suggesting the include function and
+other comments, and Mohammad S Anwar for corrections in Perl packaging.
 
 =head1 AUTHORS
 
