@@ -7,12 +7,11 @@
 # command "perldoc Starfish.pm".
 
 package Text::Starfish;
-use vars qw($NAME $ABSTRACT $VERSION);
+use vars qw($NAME $ABSTRACT $VERSION); use strict;
 $NAME     = 'Text::Starfish';
 $ABSTRACT = 'Perl-based System for Preprocessing and Text-Embedded Programming';
-$VERSION  = '1.37';
+$VERSION  = '1.38';
 
-use strict;
 use POSIX;
 use Carp;
 use Cwd qw(cwd);
@@ -99,7 +98,7 @@ sub include($@) { $::O .= getinclude(@_); return 1; }
 sub getinclude($@) {
   my $sf = loadinclude(@_);
   return '' unless defined $sf;
-  $sf->digest();
+  $sf->_digest();
   return $sf->{Out};
 }
 
@@ -166,7 +165,7 @@ sub process_files {
       $self->{LastUpdateTime} = (stat $self->{OUTFILE})[9];
     }
 
-    $self->digest();
+    $self->_digest();
 
     # see *123* above
     if ($outfileExternal ne '' and $outfileExternal ne $self->{OUTFILE})
@@ -219,36 +218,19 @@ sub process_files {
 
 }				# end of method process_files
 
-# eval_dispatch should see how to properly call the evaluator, or replacement
-# eventually it should also be used for string-based evaluators
-sub eval_dispatch {
-  my $self = shift;
-  my $hook = $self->{hook}->[$self->{ttype}];
-  if ($hook->{ht} eq 'regex') {
-    local $::Star = $self;
-    my $c = $self->{args}->[0];
-    my $r = &{ $self->{hook}->[$self->{ttype}]->{replace} }
-      ( $self, @{ $self->{args} } );
-    return $r if $self->{REPLACE};
-    return $c if $r eq '';
-    return $c."".$self->_output_wrap($r);
-  }
-  _croak("Hook type not evaluated: ht=($hook->{ht})");
-}
-
-sub digest {
+sub _digest {
   my $self = shift;
   $self->{CurrentLoop} = 1;
   my $savedcontent = $self->{data};
   
  START:			# The main scanning loop
   $self->{Out} = '';
-  $self->scan();
+  $self->_scan();
   while ($self->{ttype} != -1) {
     if ($self->{ttype} > -1) {
       my $hook = $self->{hook}->[$self->{ttype}];
-      if ($hook->{ht} eq 'regex') {
-	$self->{Out} .= $self->eval_dispatch;
+      if ($hook->{ht} eq 'regex' or $hook->{ht} eq 'string') {
+	$self->{Out} .= $self->_eval_dispatch;
       }
       # old style regex evaluator, should be removed, but first
       # fix problems with python style
@@ -262,7 +244,7 @@ sub digest {
       }
     } # else $ttype < -1 (outer text)
     else { $self->_process_outer( $self->{currenttoken} ) }
-    $self->scan();
+    $self->_scan();
   }
     
   if ($self->{CurrentLoop} < $self->{Loops}) {
@@ -299,7 +281,7 @@ sub digest {
       $self->{Out}.= $self->{MprefAuxDefine}.$s.$self->{MsufAuxDefine};
     }
   }
-} # end of sub digest
+} # end of sub _digest
 
 # process outer text; by default, it should be appended to $self->{Out}
 sub _process_outer {
@@ -310,41 +292,59 @@ sub _process_outer {
   # not in REPLACE mode; maybe comment-out outer text? (todo?)
 }
 
+# _index($str,$substr) or _index($str, qr/../)
+# returns index and length of found match, index==-1 for not found
+# third argument is an optional offset
 sub _index {
-    my $str = shift;
-    my $subs = shift;
-    if (ref($subs) eq 'Regexp') {
-	if ($str =~ $subs) { return (length($`),length($&)) }
-	else { return (-1,0) }
+  my $str = shift; my $subs = shift; my $off = shift;
+  if (ref($subs) eq 'Regexp') {
+    if ($off < 1) {
+      if ($str =~ $subs) { return (length($`),length($&)) }
+      else { return (-1,0) }
+    } else {
+      pos($str) = $off;
+      if ($str =~ /$subs/g) { return (length($`),length($&)) }
+      else { return (-1,0) }
     }
-    else { return (index($str, $subs), length($subs)) }
+  }
+  elsif ($off < 1) { return (index($str, $subs), length($subs)) }
+  else { return (index($str, $subs, $off), length($subs)) }
 }
 
 # $self->{ttype}: -1 EOF
 #             -2 outer text (but also handled directly)
-sub scan {
+sub _scan {
   my $self = shift;
 
   $self->{prefix} = $self->{suffix} = '';
   $self->{args} = [];
   if ($self->{data} eq '') {	# no more data, EOF
-    $self->{ttype} = -1;
+    $self->{ttype} = -1;        # ttype==-1 is EOF
     $self->{currenttoken} = '';
   }
   else {
     my $i1 = length($self->{data}) + 1;   # distance to starting anchor
     my $i2 = $i1;                         # distance to ending anchor
-    my $pl=0; my $sl=0;
-    $self->{ttype} = -2;
+    my $pl=0; my $sl=0;                   # prefix and suffix lengths
+    $self->{ttype} = -2;                  # token type == hook id
     foreach my $ttype (0 .. $#{ $self->{hook} }) {
-      my ($j, $pl2, $j2, $sl2);         # $j  dist to candidate starting achor
-                                        # $j2 dist to candidate ending anchor
-      if (exists($self->{hook}->[$ttype]->{'begin'})) {
+      my $hook = $self->{hook}->[$ttype];
+      my ($j, $pl2, $j2, $sl2); # current token under consideration,
+                                # $j  dist to candidate starting achor
+                                # $j2 dist to candidate ending anchor
+                                # pl2 and sl2 - lengths of prefix and suffix
+      if ($hook->{ht} eq 'string') {
+	($j,$pl2) = _index($self->{data}, $hook->{s});
+	next unless $j != -1 && $j <= $i1;
+	next if $j==$i1 and $i2<=$j+$pl2;
+	$i1 = $j; $pl = $pl2; $self->{ttype} = $ttype; $self->{args} = [];
+	$i2 = $i1+$pl; $sl = 0;
+      } elsif (exists($hook->{'begin'})) {
 	# $j - to the start of the candidate active snippet
-	($j,$pl2) = _index($self->{data}, $self->{hook}->[$ttype]->{'begin'});
+	($j,$pl2) = _index($self->{data}, $hook->{'begin'});
 	next unless $j != -1 && $j <= $i1;
 	my $data2 = substr($self->{data}, $j);
-	if ($self->{hook}->[$ttype]->{'end'} ne '') {
+	if ($hook->{'end'} ne '') {
 	  ($j2, $sl2) = _index($data2, $self->{hook}->[$ttype]->{'end'});
 	  next if -1 == $j2;
 	  $j2 += $j;
@@ -354,7 +354,7 @@ sub scan {
 	$self->{ttype} = $ttype;
 	$self->{args}  = [];
       } else {		# matching regex hook
-	my @args = ($self->{data} =~ /$self->{hook}->[$ttype]->{regex}/m);
+	my @args = ($self->{data} =~ /$hook->{regex}/m);
 	next unless @args;
 	my $j = length($`);
 	next unless $j < $i1;
@@ -389,7 +389,7 @@ sub scan {
 	$self->{suffix} = substr($self->{data}, $i2, $sl);
 	$self->{data} = substr($self->{data}, $i2+$sl);
       }
-	  # Remove old output if it is there:
+      # Remove old output if it is there:
       if (defined($self->{OutDelimiters})) {
 	my ($b1,$b2,$e1,$e2) = @{ $self->{OutDelimiters} };
 	if ($self->{data} =~ /^\Q$b1\E(\d*)\Q$b2\E.*?\Q$e1\E\1\Q$e2\E/s) {
@@ -399,6 +399,26 @@ sub scan {
   }
   
   return $self->{ttype};
+}
+
+# _eval_dispatch should decide how to properly call the evaluator, or just
+# apply replacement.  It should eventually be used for string-based evaluators.
+sub _eval_dispatch {
+  my $self = shift;
+  my $hook = $self->{hook}->[$self->{ttype}];
+  local $::Star = $self;
+  local $::O = '';
+  if ($hook->{ht} eq 'string') { $::O = $hook->{replace};
+  } elsif ($hook->{ht} eq 'regex') {
+    $::O = &{ $self->{hook}->[$self->{ttype}]->{replace} }
+      ( $self, @{ $self->{args} } );
+  } else {
+    _croak("Hook type not evaluated: ht=($hook->{ht})"); }
+
+  return $::O if $self->{REPLACE};
+  return $self->{currenttoken} if $::O eq '';
+  return $self->{currenttoken}.
+         $self->_output_wrap( $::O );
 }
 
 # eval wrapper for string code
@@ -416,27 +436,25 @@ sub eval1 {
 }
 
 # The main subroutine for evaluating a snippet of string
-sub evaluate {
-    my $self = shift;
+sub _evaluate {
+  my $self = shift;
 
-    my $pref = shift;
-    my $code = shift; my $c = $code;
-    my $suf = shift;
-    if (defined($self->{CodePreparation}) && $self->{CodePreparation}) {
-	local $_=$code;
-	$self->eval1($self->{CodePreparation},'preprocessing');
-	$code = $_;
-  	}
+  my $pref = shift;
+  my $code = shift; my $c = $code;
+  my $suf = shift;
+  if (defined($self->{CodePreparation}) && $self->{CodePreparation}) {
+    local $_=$code;
+    $self->eval1($self->{CodePreparation},'preprocessing');
+    $code = $_; }
 
-    # Evaluate code, first final preparation and then eval1
-    local $::Star = $self;
-    local $::O = '';
-    $self->eval1($code, 'snippet');
+  # Evaluate code, first final preparation and then eval1
+  local $::Star = $self;
+  local $::O = '';
+  $self->eval1($code, 'snippet');
  
-    if ($self->{REPLACE}) { return $::O }
-    if ($::O ne '') { $suf.= $self->_output_wrap($::O); }	  
-    return "$pref$c$suf";
-  }
+  if ($self->{REPLACE}) { return $::O }
+  if ($::O ne '') { $suf.= $self->_output_wrap($::O); }	  
+  return "$pref$c$suf"; }
 
 # Wrap output with output delimiters
 sub _output_wrap {
@@ -844,9 +862,9 @@ sub set_style {
   $self->{'IgnoreOuter'} = '';
   $self->{OutDelimiters} = [ "#", "+\n", "#", "-" ];
   $self->{hook}= [
-      {ht=>'be', begin => '#<?', end => '!>', f => \&evaluate },
-      {ht=>'be', begin => '<?',  end => '!>', f => \&evaluate },
-      {ht=>'be', begin => '<?starfish', end => '?>', f => \&evaluate }
+      {ht=>'be', begin => '#<?', end => '!>', f => \&_evaluate },
+      {ht=>'be', begin => '<?',  end => '!>', f => \&_evaluate },
+      {ht=>'be', begin => '<?starfish', end => '?>', f => \&_evaluate }
     ];
     $self->{CodePreparation} = 's/\\n(?:#|%|\/\/+)/\\n/g';
 
@@ -869,8 +887,8 @@ sub set_style {
     elsif ($s eq 'java') {
       $self->{LineComment} = '//';
       $self->{OutDelimiters} = [ "//", "+\n", "//", "-" ];
-      $self->{hook} = [{begin => '//<?', end => '!>', f => \&evaluate },
-		       {begin => '<?', end => '!>', f => \&evaluate }];
+      $self->{hook} = [{begin => '//<?', end => '!>', f => \&_evaluate },
+		       {begin => '<?', end => '!>', f => \&_evaluate }];
       $self->{CodePreparation} = 's/^\s*\/\/+//mg';
     }
     elsif ($s eq 'tex') {
@@ -878,11 +896,11 @@ sub set_style {
       # change OutDelimiters ?
       # $self->{OutDelimiters} = [ "%", "+\n", "%", "-\n" ];
       $self->{OutDelimiters} = [ "%", "+\n", "\n%", "-\n" ];
-      $self->{hook}=[{ht=>'be', begin => '%<?', end => "!>\n", f => \&evaluate },
+      $self->{hook}=[{ht=>'be', begin=>'%<?', end=>"!>\n", f=>\&_evaluate },
 		     # change to this one?
-		     #{ht=>'be', begin => '%<?', end => "!>", f => \&evaluate },
-		     {ht=>'be', begin => '<?', end => "!>\n", f => \&evaluate },
-		     {ht=>'be', begin => '<?', end => "!>", f => \&evaluate }];
+		     #{ht=>'be', begin=>'%<?', end=>"!>", f=>\&_evaluate },
+		     {ht=>'be', begin=>'<?', end=>"!>\n", f=>\&_evaluate },
+		     {ht=>'be', begin=>'<?', end=>"!>", f=>\&_evaluate }];
 
       $self->{CodePreparation} = 's/^[ \t]*%//mg';
     }
@@ -890,9 +908,9 @@ sub set_style {
       undef $self->{LineComment};
       $self->{OutDelimiters} = [ "<!-- +", " -->", "<!-- -", " -->" ];
       $self->{hook}=[
-        {ht=>'be', begin=>'<!--<?', end => '!>-->', f => \&evaluate },
-        {ht=>'be', begin=>'<?starfish ', end=>'?>', f=>\&evaluate },
-        {begin=>qr/<\?sf\s/, end=>qr/!>/, f=>\&evaluate },
+        {ht=>'be', begin=>'<!--<?', end => '!>-->', f => \&_evaluate },
+        {ht=>'be', begin=>'<?starfish ', end=>'?>', f=>\&_evaluate },
+        {begin=>qr/<\?sf\s/, end=>qr/!>/, f=>\&_evaluate },
       ];
       $self->addHook(qr/^#.*\n/m, 'comment');
       $self->{CodePreparation} = '';
@@ -901,15 +919,15 @@ sub set_style {
       undef $self->{LineComment}; # Changes
       $self->{OutDelimiters} = [ "<!-- +", " -->", "<!-- -", " -->" ];
       $self->{hook}=[
-	{ht=>'be', begin => '<!--<?', end => '!>-->', f => \&evaluate },
-	{ht=>'be', begin=>'<?starfish ', end=>'?>', f=>\&evaluate } ];
+	{ht=>'be', begin => '<!--<?', end => '!>-->', f => \&_evaluate },
+	{ht=>'be', begin=>'<?starfish ', end=>'?>', f=>\&_evaluate } ];
       $self->{CodePreparation} = '';
     }
     elsif ($s eq 'ps') {
       $self->{LineComment} = '%';
       $self->{OutDelimiters} = [ "% ", "+\n", "% ", "-" ];      
       $self->{hook}=[
-         {ht=>'be', begin => '<?', end => '!>', f => \&evaluate }];
+         {ht=>'be', begin => '<?', end => '!>', f => \&_evaluate }];
       $self->{CodePreparation} = 's/\\n%/\\n/g';
     }
     else { _croak("set_style:unknown style:$s") }
@@ -954,7 +972,9 @@ sub set_out_delimiters {
   { unshift @_, $self; $self = $::Star; }
   _croak("OutDelimiters must be array of 4 elements:(@_)") if scalar(@_)!=4;
   $self->{OutDelimiters} = [ $_[0], $_[1], $_[2], $_[3] ]; }
-  
+
+# eg: add_hook('string','somestring','replacement')
+# add_hook('be', '<?new', '!'.'>');
 sub add_hook {
   my $self = shift;
   if (ref($self) ne 'Text::Starfish')
@@ -962,7 +982,41 @@ sub add_hook {
 
   my $ht = shift;
   my $hooks = $self->{hook}; my $hook = { ht=>$ht };
-  if ($ht eq 'regex') {
+  if ($ht eq 'string') {
+    my $s=shift; my $replace = shift;
+    $hook->{s} = $s; $hook->{replace} = $replace;
+    push @{$hooks}, $hook;
+  } elsif ($ht eq 'be') {
+    my $b = shift; my $e = shift; my $f='default';
+    if ($#_>-1) { $f = shift }
+    $hook->{begin} = $b; $hook->{end} = $e;
+    if ($f eq 'default') { $hook->{f} = \&_evaluate;
+      push @{$hooks}, $hook; return;
+    } elsif ($f eq 'ignore') { $hook->{f} = \&eval_ignore;
+      push @{$hooks}, $hook; return;
+    } elsif ($f eq 'echo') { $hook->{f} = \&eval_echo;
+      push @{$hooks}, $hook; return;
+    } elsif (ref($f) eq 'CODE') {
+      $hook->{f} = sub { local $_; my $self=shift;
+			 my $p=shift; $_=shift; my $s=shift;
+			 &$f($p,$_,$s);
+			 if ($self->{REPLACE}) { return $_ }
+			 return "$p$_$s";
+		       };
+      push @{$hooks}, $hook; return;
+    } else {
+      $hook->{ht} = '';
+      eval("\$hook->{f} = sub {\n".
+      	   "local \$_;\n".
+      	   "my \$self = shift;\n".
+      	   "my \$p = shift; \$_ = shift; my \$s = shift;\n".
+      	   "$f;\n".
+      	   'if ($self->{REPLACE}) { return $_ }'."\n".
+      	   "return \"\$p\$_\$s\"; };");
+      _croak("add_hook error:$@") if $@;
+      push @{$hooks}, $hook; return;
+    }
+  } elsif ($ht eq 'regex') {
     my $regex=shift; my $replace = shift;
     $hook->{regex} = $regex;
     if (ref($replace) eq '' && $replace eq 'comment')
@@ -973,60 +1027,35 @@ sub add_hook {
 		  "(TODO?): ref regex(".ref($regex).
 		  "), ref replace(".ref($replace).")" ) }
     push @{$hooks}, $hook;
-  } elsif ($ht eq 'be') {
-    my $b = shift; my $e = shift; my $f='default';
-    if ($#_>-1) { $f = shift }
-    $self->addHook($b, $e, $f);
   } else { _croak("add_hook error, unknown hook type `$ht'") }
 }
 
 # addHook is deprecated.  Use add_hook, which contains the hook type
 # as the second argument, after $self.
 sub addHook {
-    my $self = shift;
-    my @Hook = @{ $self->{hook} };
+  my $self = shift;
+  my @Hook = @{ $self->{hook} };
 
-    if ($#_ == 2) {
-	my $p = shift; my $s=shift; my $fun=shift;
-	if ($fun eq 'default')
-	{ push @Hook, {begin=>$p, end=>$s, f=>\&evaluate} }
-	elsif ($fun eq 'ignore')
-	{ push @Hook, {begin=>$p, end=>$s, f=>\&eval_ignore} }
-	elsif ($fun eq 'echo')
-	{ push @Hook, {begin=>$p, end=>$s, f=>\&eval_echo} }
-	elsif (ref($fun) eq 'CODE') {
-	    push @Hook, {begin=>$p, end=>$s,
-			 f=> sub { local $_; my $self=shift;
-				   my $p=shift; $_=shift; my $s=shift;
-				   &$fun($p,$_,$s);
-				   if ($self->{REPLACE}) { return $_ }
-				   return "$p$_$s";
-			       }
-		     };
-	}
-	else {
-	    eval("push \@Hook, {begin=>\$p, end=>\$s,".
-		 "f=>sub{\n".
-		 "local \$_;\n".
-		 "my \$self = shift;\n".
-		 "my \$p = shift; \$_ = shift; my \$s = shift;\n".
-		 "$fun;\n".
-		 'if ($self->{REPLACE}) { return $_ }'."\n".
-		 "return \"\$p\$_\$s\"; } };");
-	}
-	_croak("addHook error:$@") if $@;
-    } elsif ($#_ == 1 and ref($_[0]) eq 'Regexp') { #regex hook
-        my $regex=shift; my $replace = shift;
-        if (ref($replace) eq '' && $replace eq 'comment')
-	{ push @Hook, {regex=>$regex, replace=>\&repl_comment} }
-	elsif (ref($replace) eq 'CODE')
-	{ push @Hook, {regex=>$regex, replace=>$replace} }
-	else { _croak("addHook, undefined regex format input ".
-	              "(TODO?): ".ref($regex).", ".ref($replace)
-		      ) }
-    } else { _croak("addHook parameter error") }
-
-    $self->{hook} = \@Hook;
+  if ($#_ == 2) {
+    $self->add_hook('be', @_); return;
+  } elsif ($#_ == 1 and ref($_[0]) eq 'Regexp') { #regex hook
+    my $regex=shift; my $replace = shift;
+    if (ref($replace) eq '' && $replace eq 'comment') {
+      $self->add_hook('regex', $regex, $replace); return;
+      #!!! to remove below later
+      #push @Hook, {regex=>$regex, replace=>\&repl_comment}
+    }
+    elsif (ref($replace) eq 'CODE') {
+      #!!! line below does not work, need to check
+      # it seems that hooks are treated differently
+      #$self->add_hook('regex', $regex, $replace); return;
+      push @Hook, {regex=>$regex, replace=>$replace} }
+    else { _croak("addHook, undefined regex format input ".
+		  "(TODO?): ".ref($regex).", ".ref($replace)
+		 ) }
+  } else { _croak("addHook parameter error") }
+  
+  $self->{hook} = \@Hook;
 }
 
 sub rm_hook {
@@ -1049,15 +1078,10 @@ sub rm_hook {
 
 # rmHook to be deprecated.  Needs to be replaced with rm_hook
 sub rmHook {
-    my $self = shift;
-    my $p = shift;
-    my $s = shift;
-    $self->rm_hook('be', $p, $s); return; }
+  my $self = shift; my $p = shift; my $s = shift;
+  $self->rm_hook('be', $p, $s); return; }
 
-sub rmAllHooks {
-    my $self = shift;
-    $self->{hook} = [];
-}
+sub rmAllHooks { my $self = shift; $self->{hook} = []; }
 
 sub resetHooks { my $self = shift; $self->rmAllHooks(); $self->set_style(); }
 
@@ -1734,10 +1758,39 @@ See C<sfish_add_tag> for a few more details.
 =head2 $o->add_hook($ht,...) -- (and function add_hook)
 
 Adds a new hook.  The first argument is the hook type, which is a
-string.  If use as the function, it will run on C<$::Star> object.
+string.  If it is used as a function, it will run on the C<$::Star> object.
 The following is the list of hook types with descriptions:
 
 =over 5
+
+=item string, I<somestring>, I<replacementstring>
+
+A simple hook to replace a string with another string.  In the update mode,
+we must take care that the string to be replaced is commented out if needed.
+For example, after the following embedded code:
+
+  <?starfish
+  add_hook('string', '<code>App::Utils</code>',
+    '<a href="https://metacpan.org/pod/App-Utils" target="_blank">'.
+    '<code>App::Utils</code></a>'); ?>
+
+any occurence of C<E<lt>codeE<gt>App::UtilsE<lt>/codeE<gt>> is replaced with:
+
+  <a href="https://metacpan.org/pod/App-Utils" target="_blank">
+  <code>App::Utils</code></a>
+
+=item be, I<prefix>, I<suffix>
+
+Adding a hook with new prefix (begin delimiter) and suffix (end delimiter).
+The following example replaces the default hook C<E<lt>?...!E<gt>> with
+a new one C<E<lt>?new ...!E<gt>>:
+
+  rm_hook('be', '<?', '!'.'>'); # remove default hook (notice that we avoid
+                                # literal ending delimiter '!>' in order
+                                # not to be confused with default suffix
+  add_hook('be', '<?new ', '!'.'>'); # adding a new hook
+
+
 
 =item regex, I<regex>, I<replace>
 
@@ -1918,7 +1971,7 @@ The code for get include is the following:
 
  sub getinclude($@) {
      my $sf = loadinclude(@_);
-     $sf->digest();
+     $sf->_digest();
      return $sf->{Out};
  }
 
