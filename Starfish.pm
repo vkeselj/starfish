@@ -10,7 +10,7 @@ package Text::Starfish;
 use vars qw($NAME $ABSTRACT $VERSION); use strict;
 $NAME     = 'Text::Starfish';
 $ABSTRACT = 'Perl-based System for Preprocessing and Text-Embedded Programming';
-$VERSION  = '1.38';
+$VERSION  = '1.39';
 
 use POSIX;
 use Carp;
@@ -99,8 +99,7 @@ sub getinclude($@) {
   my $sf = loadinclude(@_);
   return '' unless defined $sf;
   $sf->_digest();
-  return $sf->{Out};
-}
+  return $sf->{Out}; }
 
 sub loadinclude($@) {
   my $infile = '';
@@ -124,8 +123,7 @@ sub loadinclude($@) {
   }
 
   $sf->{data} = getfile $sf->{INFILE};
-  return $sf;
-}
+  return $sf; }
 
 sub process_files {
   my $self = shift;
@@ -228,7 +226,7 @@ sub _digest {
   $self->_scan();
   while ($self->{ttype} != -1) {
     if ($self->{ttype} > -1) {
-      $self->{Out} .= $self->_eval_dispatch;
+      $self->{Out} .= $self->_evf_dispatch;
     } # else $ttype < -1 (outer text)
     else { $self->_process_outer( $self->{currenttoken} ) }
     $self->_scan(); }
@@ -389,14 +387,14 @@ sub _scan {
   return $self->{ttype};
 }
 
-# _eval_dispatch should decide how to properly call the evaluator, or just
+# _evf_dispatch should decide how to properly call the evaluator (evf), or just
 # apply replacement.  It should eventually be used for string-based evaluators.
-sub _eval_dispatch {
+sub _evf_dispatch {
   my $self = shift;
-  my $hook = $self->{hook}->[$self->{ttype}]; #!!! hook evaluation
+  my $hook = $self->{hook}->[$self->{ttype}]; my $ht = $hook->{ht};
   local $::Star = $self;
   local $::O = '';
-  if ($hook->{ht} eq 'string') { $::O .= $hook->{replace}; #!!!
+  if ($ht eq 'string') { $::O .= $hook->{evf_const};
   } elsif ($hook->{ht} eq 'regex') {
     $::O .= &{ $hook->{replace} } ( $self, @{ $self->{args} } ); #!!!
   } elsif ($hook->{ht} eq 'ht:re2') { #!!! python/make style eval
@@ -875,8 +873,8 @@ sub set_style {
       $self->{CodePreparation} = '';
       $self->{hook}=[];
       $self->add_hook('be', '<!--<?', '!>-->');
-      $self->add_hook('be', '<?starfish ', '?>');
-      $self->add_hook('be', qr/<\?sf\s/, qr/!>/);
+      $self->add_hook('be', qr/<\?starfish\b/, '?>');
+      $self->add_hook('be', qr/<\?sf\b/, '!>');
       $self->add_hook('regex', qr/^#.*\n/m, 'comment');
     }
     elsif ($s eq 'html') {
@@ -948,7 +946,7 @@ sub add_hook { #!!! adding hooks
   my $hooks = $self->{hook}; my $hook = { ht=>$ht };
   if ($ht eq 'string') {
     my $s=shift; my $replace = shift;
-    $hook->{s} = $s; $hook->{replace} = $replace;
+    $hook->{s} = $s; $hook->{evf_const} = $replace;
     push @{$hooks}, $hook;
   } elsif ($ht eq 'be') {
     my $b = shift; my $e = shift; my $f='default';
