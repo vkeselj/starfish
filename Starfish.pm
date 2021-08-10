@@ -1,6 +1,6 @@
 # Starfish - Perl-based System for Preprocessing and Text-Embedded Programming
 #
-# (c) 2001-2020 Vlado Keselj http://web.cs.dal.ca/~vlado vlado@dnlp.ca
+# (c) 2001-2021 Vlado Keselj https://web.cs.dal.ca/~vlado vlado@dnlp.ca
 #               and contributing authors
 #
 # See the documentation following the code.  You can also use the
@@ -1402,6 +1402,37 @@ Output:
   </BODY>
   </HTML>
 
+=head3 HTML Example 3: Separating Links
+
+Including full links in the anchor tags (E<lt>aE<gt>) makes the HTML source
+more difficult to edit and maintain.  For example, if we want to attach a link
+to the anchor text "FCS grad forms", we may want to write it in the following
+way in HTML:
+
+  <a target="_blank"
+  href="https://www.dal.ca/some/long/path.../grad-handbook/grad-forms.html"
+  >FCS grad forms</a>
+
+Instead of that, we can in the Starfish file include the following code:
+
+  <!--<?
+  add_hook('string','<a>FCS grad forms</a>',
+    '<a target="_blank" href="'.
+    'https://www.dal.ca/some/long/path.../grad-handbook/grad-forms.html'.
+    '">FCS grad forms</a>');
+  !>-->
+
+and later in the rest of the file simply use:
+
+  <a>FCS grad forms</a>
+
+which will always be replaced with the proper syntax for including the link.
+
+If we use the same anchor text several times, it will be replaced each time
+with the proper link.  The links can be kept at one place, making them easy
+to maintain and update.  We can also generate links is some programmable
+way if it is appropriate.
+
 =head2 Example from a Makefile
  
   LIST=first second third\
@@ -2171,7 +2202,7 @@ other comments, and Mohammad S Anwar for corrections in Perl packaging.
 
 =head1 AUTHORS
 
- 2001-2020 Vlado Keselj http://web.cs.dal.ca/~vlado
+ 2001-2021 Vlado Keselj https://web.cs.dal.ca/~vlado
            and contributing authors:
       2007 Charles Ikeson (overhaul of test.pl)
 
